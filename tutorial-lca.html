@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Latent Class Analysis Tutorial — James C. Mott, Ph.D.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root {
+    --navy:   #0A1628;
+    --cream:  #F4F1EB;
+    --red:    #C0392B;
+    --gold:   #B8860B;
+    --gray:   #64748B;
+    --lgray:  #E8E4DC;
+    --white:  #FFFFFF;
+    --code-bg:#F8F6F2;
+    --teal:   #0D6E6E;
+    --teal-light: #E0F2F1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--navy); line-height: 1.7; }
+  nav { background: var(--navy); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { color: var(--white); font-family: 'Playfair Display', serif; font-size: 1.1rem; text-decoration: none; }
+  .nav-back { color: #A8B8C8; text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-back:hover { color: var(--white); }
+  .hero { background: var(--navy); color: var(--white); padding: 5rem 2rem 4rem; text-align: center; }
+  .hero-tag { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; margin-bottom: 1.25rem; }
+  .hero h1 em { font-style: italic; color: #7EC8C8; }
+  .hero-sub { font-size: 1.05rem; color: #A8B8C8; max-width: 640px; margin: 0 auto 2rem; font-weight: 300; }
+  .hero-meta { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.82rem; color: #7A8FA0; letter-spacing: 0.05em; }
+  .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+  .toc { background: var(--white); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 1.5rem 2rem; margin: 3rem 0 2rem; }
+  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.75rem; }
+  .toc ol { padding-left: 1.2rem; }
+  .toc li { margin: 0.3rem 0; }
+  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+  .toc a:hover { color: var(--teal); }
+  .section { padding: 3rem 0 1rem; }
+  .section-num { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .section h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 1.25rem; line-height: 1.3; }
+  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
+  .section strong { color: var(--navy); }
+  .code-block { margin: 1.5rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .code-header { background: var(--navy); color: #7A9BB5; font-family: 'Source Code Pro', monospace; font-size: 0.75rem; padding: 0.6rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+  .copy-btn { background: transparent; border: 1px solid #3A5A7A; color: #7A9BB5; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-family: 'Source Code Pro', monospace; transition: all 0.2s; }
+  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
+  .code-block pre { margin: 0 !important; border-radius: 0 !important; background: var(--code-bg) !important; padding: 1.5rem !important; font-size: 0.87rem !important; line-height: 1.6 !important; overflow-x: auto; }
+  .code-block code { font-family: 'Source Code Pro', monospace !important; }
+  .callout { border-left: 3px solid var(--navy); background: var(--white); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; margin: 1.5rem 0; font-size: 0.92rem; }
+  .callout.tip { border-color: var(--teal); background: var(--teal-light); }
+  .callout.warn { border-color: var(--gold); background: #FEFBF0; }
+  .callout.insight { border-color: #6A0DAD; background: #F5F0FF; }
+  .callout-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; color: var(--gray); }
+  .callout.tip .callout-label { color: var(--teal); }
+  .callout.warn .callout-label { color: var(--gold); }
+  .callout.insight .callout-label { color: #6A0DAD; }
+  .segment-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .segment-card { border-radius: 8px; padding: 1.25rem 1.5rem; border: 1px solid var(--lgray); }
+  .segment-card.prime { background: #EAF5EA; border-color: #2E7D32; }
+  .segment-card.sub   { background: #FFF3E0; border-color: #E65100; }
+  .segment-card.dti   { background: #FCE4EC; border-color: #C62828; }
+  .segment-card.mixed { background: #F3F0FF; border-color: #4527A0; }
+  .seg-rate { display: inline-block; font-size: 0.75rem; font-weight: 700; padding: 3px 10px; border-radius: 12px; margin-bottom: 0.6rem; }
+  .prime .seg-rate { background: #2E7D32; color: white; }
+  .sub .seg-rate   { background: #E65100; color: white; }
+  .dti .seg-rate   { background: #C62828; color: white; }
+  .mixed .seg-rate { background: #4527A0; color: white; }
+  .seg-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+  .seg-attrs { list-style: none; padding: 0; font-size: 0.88rem; color: #3A4A5A; line-height: 1.8; }
+  .seg-attrs li::before { content: "→ "; color: var(--gray); }
+  .seg-insight { margin-top: 0.75rem; font-size: 0.85rem; font-style: italic; color: var(--gray); border-top: 1px solid rgba(0,0,0,0.08); padding-top: 0.6rem; }
+  .output-block { background: #F0F4F0; border: 1px solid #C8D8C8; border-radius: 6px; padding: 1.25rem 1.5rem; font-family: 'Source Code Pro', monospace; font-size: 0.82rem; line-height: 1.8; margin: 1.5rem 0; overflow-x: auto; white-space: pre; }
+  .output-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: #2E7D32; margin-bottom: 0.5rem; }
+  .divider { border: none; border-top: 1px solid var(--lgray); margin: 2.5rem 0; }
+  .next-section { background: var(--white); border-radius: 10px; padding: 2.5rem; margin: 3rem 0; }
+  .next-section h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .next-section p { color: var(--gray); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .tutorial-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .tutorial-card { border: 1px solid var(--lgray); border-radius: 8px; padding: 1.25rem; text-decoration: none; color: var(--navy); transition: border-color 0.2s, box-shadow 0.2s; }
+  .tutorial-card:hover { border-color: var(--teal); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .card-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
+  .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .card-status { font-size: 0.8rem; color: var(--gray); }
+  .card-status.coming { color: #B0B8C0; font-style: italic; }
+  .method-note { background: #F8F6F2; border: 1px solid var(--lgray); border-radius: 6px; padding: 1rem 1.25rem; font-size: 0.85rem; color: var(--gray); font-style: italic; margin: 2rem 0; }
+  footer { background: var(--navy); color: #7A8FA0; text-align: center; padding: 2.5rem 1rem; margin-top: 5rem; font-size: 0.85rem; }
+  footer a { color: #A8C4E0; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
+  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Tutorial · Python · Credit Risk · Segmentation</div>
+  <h1>Your PD Model Tells You Who's Risky.<br><em>LCA Tells You Why.</em></h1>
+  <p class="hero-sub">Latent Class Analysis finds hidden borrower segments in your portfolio — distinct risk profiles that a single probability score can't see. Here's how to run it in Python.</p>
+  <div class="hero-meta">
+    <span>📓 Jupyter Notebook</span>
+    <span>🐍 Python · sklearn · seaborn</span>
+    <span>📅 2026</span>
+    <span>⏱ ~25 min</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#overview">The Problem with a Single Risk Score</a></li>
+      <li><a href="#what-is-lca">What Is LCA?</a></li>
+      <li><a href="#setup">Setup & Imports</a></li>
+      <li><a href="#data">Load & Prepare the Data</a></li>
+      <li><a href="#model">Fit the Gaussian Mixture Model</a></li>
+      <li><a href="#profile">Profile Each Segment</a></li>
+      <li><a href="#heatmap">Build the Heatmap</a></li>
+      <li><a href="#selection">Model Selection: AIC, BIC & Entropy</a></li>
+      <li><a href="#results">What the Four Classes Tell Us</a></li>
+    </ol>
+  </nav>
+
+  <div class="section" id="overview">
+    <div class="section-num">01 — The Problem</div>
+    <h2>What a PD Score Can't Tell You</h2>
+    <p>In credit risk, the default question for any borrower is <em>"what's their probability of default?"</em> A scorecard or gradient-boosted model gives you a number, you set a cutoff, and you make a decision. That paradigm has been dominant for decades — and for good reason. It works.</p>
+    <p>But it leaves a critical question unanswered: <strong>what kind of borrower is risky?</strong></p>
+    <p>A PD of 17% can come from a credit-damaged borrower paying punitive rates, or from a heavily-indebted borrower whose FICO still looks fine on paper. Same risk number. Completely different stories — and probably different appropriate responses from a pricing, collections, or product perspective.</p>
+    <div class="callout insight">
+      <div class="callout-label">The core insight</div>
+      LCA doesn't replace your scorecard. It fills the gap your scorecard leaves open: the <em>story</em> of who your borrowers are, what segments live inside your portfolio, and how risk takes different shapes for different people.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="what-is-lca">
+    <div class="section-num">02 — Concept</div>
+    <h2>What Is Latent Class Analysis?</h2>
+    <p>Latent Class Analysis is a statistical technique that finds hidden subgroups in data based on patterns across multiple variables at once. It has been a workhorse in market research for decades — segmenting consumers by buying behavior, attitudes, or product preferences — but it is rarely applied to credit risk.</p>
+    <p>Where a PD model asks <em>"how risky is this borrower?"</em>, LCA asks a different question: <em>"what kinds of borrowers exist in my portfolio, and how do they differ?"</em></p>
+    <p>The output is a small number of distinct profiles, each defined by a combination of attributes rather than a single score. In this tutorial we implement LCA using a <strong>Gaussian Mixture Model (GMM)</strong> on discretized features, with the four-class solution chosen by AIC/BIC.</p>
+    <div class="callout tip">
+      <div class="callout-label">Dataset</div>
+      25,000-loan LendingClub sample. Five borrower attributes: interest rate, annual income, DTI, FICO score, and loan purpose — each discretized into bins. Loan status is held out and compared against segments after the fact.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="setup">
+    <div class="section-num">03 — Setup</div>
+    <h2>Imports</h2>
+    <div class="code-block">
+      <div class="code-header"><span>setup.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">import warnings
+warnings.filterwarnings('ignore')
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.preprocessing import LabelEncoder, KBinsDiscretizer
+from sklearn.mixture import GaussianMixture
+
+print("✅ Libraries loaded")</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="data">
+    <div class="section-num">04 — Data Preparation</div>
+    <h2>Load, Clean & Discretize</h2>
+    <p>We select five borrower attributes, simplify categorical variables, and discretize continuous features into three quantile bins (Low / Medium / High). Loan status is encoded separately and <strong>held out of the clustering</strong> — it is used only after the fact to validate segments.</p>
+    <div class="code-block">
+      <div class="code-header"><span>load_data.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">DATA_PATH = "lendingclub_sample_25000.csv"
+OUTPUT_DIR = "."
+
+df_raw = pd.read_csv(DATA_PATH, low_memory=False)
+
+# Customer ID for traceability
+if 'id' in df_raw.columns:
+    df_raw['customer_id'] = df_raw['id']
+elif 'member_id' in df_raw.columns:
+    df_raw['customer_id'] = df_raw['member_id']
+else:
+    df_raw['customer_id'] = df_raw.index
+
+# Select and clean columns
+cols = ['customer_id', 'int_rate', 'annual_inc', 'dti',
+        'fico_range_high', 'purpose', 'loan_status']
+df = df_raw[cols].dropna()
+
+# Simplify loan purpose into 4 groups
+purpose_mapping = {
+    'debt_consolidation': 'Debt',   'credit_card':      'Debt',
+    'home_improvement':   'Investment', 'major_purchase': 'Investment',
+    'small_business':     'Investment', 'car':            'Personal',
+    'vacation':           'Personal',  'wedding':         'Personal',
+    'moving':             'Personal',  'medical':         'Personal',
+    'other':              'Other',     'house':           'Other',
+    'renewable_energy':   'Other',     'educational':     'Other'
+}
+df['purpose'] = df['purpose'].map(purpose_mapping)
+df = df[df['purpose'].notna()]
+
+# Consolidate loan_status into Good / Bad / Neutral
+status_map = {
+    'Fully Paid': 'Good',        'Current':             'Good',
+    'Charged Off': 'Bad',        'Default':             'Bad',
+    'Late (16-30 days)': 'Bad',  'Late (31-120 days)':  'Bad',
+    'In Grace Period': 'Neutral','Issued':               'Neutral'
+}
+df['loan_status'] = df['loan_status'].map(status_map)
+df = df[df['loan_status'].notna()]
+
+# Encode categoricals (alphabetical order — remember the mapping!)
+# purpose:     Debt=0, Investment=1, Other=2, Personal=3
+# loan_status: Bad=0,  Good=1,       Neutral=2
+df['purpose']     = LabelEncoder().fit_transform(df['purpose'])
+df['loan_status'] = LabelEncoder().fit_transform(df['loan_status'])
+
+# Discretize continuous features into 3 quantile bins
+# bin 0 = Low, bin 1 = Medium, bin 2 = High
+continuous_cols = ['int_rate', 'annual_inc', 'dti', 'fico_range_high']
+discretizer = KBinsDiscretizer(n_bins=3, encode='ordinal', strategy='quantile')
+df[continuous_cols] = discretizer.fit_transform(df[continuous_cols])
+
+print(f"Final dataset: {len(df):,} rows")</code></pre>
+    </div>
+    <div class="callout warn">
+      <div class="callout-label">Important</div>
+      <code>LabelEncoder</code> assigns codes alphabetically. Debt=0, Investment=1, Other=2, Personal=3. Keep this mapping in mind when interpreting the heatmap columns later.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="model">
+    <div class="section-num">05 — Modeling</div>
+    <h2>Fit the Gaussian Mixture Model</h2>
+    <p>We use a Gaussian Mixture Model as our LCA estimator, fit on four latent classes. Class numbering is stabilized by segment size — the largest segment becomes Class 0 — so results are reproducible across runs.</p>
+    <div class="code-block">
+      <div class="code-header"><span>fit_gmm.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python"># Features for clustering — hold out loan_status and customer_id
+X = df.drop(columns=['loan_status', 'customer_id'])
+
+# Fit GMM with 4 latent classes
+gmm = GaussianMixture(n_components=4, random_state=42)
+raw_classes = gmm.fit_predict(X)
+
+# Stabilize class numbering: largest segment → Class 0
+order = pd.Series(raw_classes).value_counts().index.tolist()
+remap = {old: new for new, old in enumerate(order)}
+df['latent_class'] = pd.Series(raw_classes, index=df.index).map(remap)
+
+print("Class sizes (after re-numbering):")
+print(df['latent_class'].value_counts().sort_index())
+
+# Export full dataset and per-class files
+df.to_csv(f"{OUTPUT_DIR}/lendingclub_with_latent_classes.csv", index=False)
+for class_id in sorted(df['latent_class'].unique()):
+    class_df = df[df['latent_class'] == class_id]
+    class_df.to_csv(f"{OUTPUT_DIR}/latent_class_{class_id}_customers.csv", index=False)</code></pre>
+    </div>
+    <div class="output-block"><span class="output-label">Sample Output</span>
+Class sizes (after re-numbering):
+latent_class
+0    11842
+1     6134
+2     4701
+3     2323</div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="profile">
+    <div class="section-num">06 — Profiling</div>
+    <h2>Build the Within-Class Profile Table</h2>
+    <p>We compute within-class proportions for every attribute level — what percentage of borrowers in each class have Low/Medium/High interest rates, income, DTI, and FICO. This becomes the data behind the heatmap.</p>
+    <div class="code-block">
+      <div class="code-header"><span>profile.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">summary = (
+    df.drop(columns=['customer_id'])
+      .groupby('latent_class')
+      .agg(lambda x: x.value_counts(normalize=True).to_dict())
+)
+
+expanded_summary = {}
+for col in summary.columns:
+    temp_df = pd.DataFrame(summary[col].tolist(), index=summary.index)
+    temp_df.columns = [f"{col}_{str(c)}" for c in temp_df.columns]
+    expanded_summary.update(temp_df.to_dict(orient="series"))
+summary_df = pd.DataFrame(expanded_summary)
+
+col_percent = (summary_df * 100).round(1)
+col_percent.to_csv(f"{OUTPUT_DIR}/latent_class_summary_4class_column_percents.csv")
+
+# Human-readable labels
+# Continuous (quantile bins):  0=Low, 1=Medium, 2=High
+# purpose (alphabetical):      0=Debt, 1=Investment, 2=Other, 3=Personal
+# loan_status (alphabetical):  0=Bad,  1=Good,       2=Neutral
+label_map = {
+    'int_rate_0.0':        'Low Interest Rate',
+    'int_rate_1.0':        'Medium Interest Rate',
+    'int_rate_2.0':        'High Interest Rate',
+    'annual_inc_0.0':      'Low Income',
+    'annual_inc_1.0':      'Medium Income',
+    'annual_inc_2.0':      'High Income',
+    'dti_0.0':             'Low DTI',
+    'dti_1.0':             'Medium DTI',
+    'dti_2.0':             'High DTI',
+    'fico_range_high_0.0': 'Low FICO',
+    'fico_range_high_1.0': 'Medium FICO',
+    'fico_range_high_2.0': 'High FICO',
+    'purpose_0':           'Debt Consolidation',
+    'purpose_1':           'Investment',
+    'purpose_2':           'Other',
+    'purpose_3':           'Personal',
+    'loan_status_0':       'Bad Loan',
+    'loan_status_1':       'Good Loan',
+    'loan_status_2':       'Neutral'
+}
+
+row_order = [
+    'Low Interest Rate', 'Medium Interest Rate', 'High Interest Rate',
+    'Low Income', 'Medium Income', 'High Income',
+    'Low DTI', 'Medium DTI', 'High DTI',
+    'Low FICO', 'Medium FICO', 'High FICO',
+    'Debt Consolidation', 'Investment', 'Personal', 'Other',
+    'Good Loan', 'Neutral', 'Bad Loan'
+]
+
+col_percent_labeled = col_percent.T.copy()
+col_percent_labeled.index = [label_map.get(lbl, lbl) for lbl in col_percent_labeled.index]
+col_percent_labeled = col_percent_labeled.reindex(
+    [r for r in row_order if r in col_percent_labeled.index])</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="heatmap">
+    <div class="section-num">07 — Visualization</div>
+    <h2>The Profile Heatmap</h2>
+    <p>The heatmap is the key deliverable. Each column is one segment; each row is one attribute level. Red cells show where attributes concentrate within a class — blue where they are scarce. The pattern of reds tells the story of each borrower type.</p>
+    <div class="code-block">
+      <div class="code-header"><span>heatmap.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python"># Column-percent heatmap (within-class profile)
+plt.figure(figsize=(10, 10))
+sns.heatmap(
+    col_percent_labeled,
+    annot=True, fmt=".1f",
+    cmap="coolwarm", linewidths=.5,
+    cbar_kws={'label': 'Percentage (within class)'}
+)
+plt.title("4-Segment Borrower Profile — Column Percents (within class)")
+plt.xlabel("Latent Class")
+plt.tight_layout()
+plt.savefig(f"{OUTPUT_DIR}/lca_heatmap.png", dpi=200, bbox_inches='tight')
+plt.show()
+
+# Row-percent heatmap (across classes)
+# "Of all borrowers with High DTI, what % are in each class?"
+row_percent = summary_df.T
+row_percent = row_percent.div(row_percent.sum(axis=1), axis=0) * 100
+row_percent = row_percent.round(1)
+
+row_percent_labeled = row_percent.copy()
+row_percent_labeled.index = [label_map.get(lbl, lbl) for lbl in row_percent_labeled.index]
+row_percent_labeled = row_percent_labeled.reindex(
+    [r for r in row_order if r in row_percent_labeled.index])
+
+plt.figure(figsize=(10, 10))
+sns.heatmap(row_percent_labeled, annot=True, fmt=".1f",
+            cmap="coolwarm", linewidths=.5,
+            cbar_kws={'label': 'Percentage (across classes)'})
+plt.title("4-Segment Profile — Row Percents (across classes)")
+plt.xlabel("Latent Class")
+plt.tight_layout()
+plt.show()</code></pre>
+    </div>
+    <div class="callout tip">
+      <div class="callout-label">Two heatmaps, two questions</div>
+      The <strong>column-percent heatmap</strong> answers "what does a typical Class 3 borrower look like?" The <strong>row-percent heatmap</strong> answers "of all borrowers with High DTI, which class are they most likely in?" Use both together for a complete picture.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="selection">
+    <div class="section-num">08 — Model Selection</div>
+    <h2>Choosing the Number of Classes: AIC, BIC & Entropy</h2>
+    <p>How do you know four classes is the right number? We fit models from 2 to 6 classes and compare AIC, BIC, and classification entropy. Lower AIC/BIC is better; lower entropy means cleaner class separation.</p>
+    <div class="code-block">
+      <div class="code-header"><span>model_selection.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">metrics = []
+for n_classes in range(2, 7):
+    g = GaussianMixture(n_components=n_classes, random_state=42)
+    g.fit(X)
+    probs   = g.predict_proba(X)
+    entropy = -np.sum(probs * np.log(probs + 1e-10), axis=1).mean()
+    metrics.append({
+        "Classes": n_classes,
+        "AIC":     g.aic(X),
+        "BIC":     g.bic(X),
+        "Entropy": entropy
+    })
+
+metrics_df = pd.DataFrame(metrics)
+metrics_df.to_csv(f"{OUTPUT_DIR}/lca_model_metrics.csv", index=False)
+print(metrics_df.to_string(index=False))
+
+# AIC & BIC plot
+plt.figure(figsize=(10, 5))
+plt.plot(metrics_df["Classes"], metrics_df["AIC"], marker='o', label="AIC", color='orange')
+plt.plot(metrics_df["Classes"], metrics_df["BIC"], marker='o', label="BIC", color='red')
+plt.xlabel("Number of Classes")
+plt.ylabel("Information Criterion")
+plt.title("AIC and BIC Across Class Solutions")
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
+
+# Entropy plot
+plt.figure(figsize=(10, 5))
+plt.plot(metrics_df["Classes"], metrics_df["Entropy"], marker='o', color='green')
+plt.xlabel("Number of Classes")
+plt.ylabel("Entropy")
+plt.title("Classification Entropy Across Class Solutions")
+plt.grid(True)
+plt.tight_layout()
+plt.show()</code></pre>
+    </div>
+    <div class="callout warn">
+      <div class="callout-label">Interpreting the elbow</div>
+      Look for where AIC and BIC stop dropping sharply — that is the elbow. Entropy should also stabilize. In this analysis, four classes gave the best balance between fit and interpretability.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="section" id="results">
+    <div class="section-num">09 — Results</div>
+    <h2>What the Four Classes Tell Us</h2>
+    <p>The segmentation surfaces four distinct borrower profiles. Bad loans don't share a common profile — there are two genuinely distinct failure modes, each requiring a different response.</p>
+
+    <div class="segment-grid">
+      <div class="segment-card prime">
+        <span class="seg-rate">7.5% bad loan rate</span>
+        <div class="seg-title">Class 0 — "Prime"</div>
+        <ul class="seg-attrs">
+          <li>59% High FICO</li>
+          <li>60.5% Low Interest Rate</li>
+          <li>49.5% Low DTI</li>
+          <li>55% High Income · 0% Low Income</li>
+        </ul>
+        <div class="seg-insight">Every dimension of underwriting points the same direction. Favorable attributes stack and compound.</div>
+      </div>
+      <div class="segment-card sub">
+        <span class="seg-rate">17.5% bad loan rate</span>
+        <div class="seg-title">Class 3 — "Subprime FICO"</div>
+        <ul class="seg-attrs">
+          <li>71.5% Low FICO</li>
+          <li>68.2% High Interest Rate</li>
+          <li>49% High Income</li>
+          <li>93% Low or Medium DTI</li>
+        </ul>
+        <div class="seg-insight">Income could not rescue them. Credit damage is doing the work — not leverage.</div>
+      </div>
+      <div class="segment-card dti">
+        <span class="seg-rate">16.3% bad loan rate</span>
+        <div class="seg-title">Class 1 — "DTI-Stretched Consolidator"</div>
+        <ul class="seg-attrs">
+          <li>100% High DTI</li>
+          <li>100% Debt Consolidation purpose</li>
+          <li>FICO mixed across all three bins</li>
+        </ul>
+        <div class="seg-insight">FICO could not save them. The debt-to-income squeeze does the damage — not credit quality.</div>
+      </div>
+      <div class="segment-card mixed">
+        <span class="seg-rate">14.9% bad loan rate</span>
+        <div class="seg-title">Class 2 — "Low-Income Mixed"</div>
+        <ul class="seg-attrs">
+          <li>Defined mainly by lower income</li>
+          <li>FICO and DTI similar to Prime class</li>
+          <li>More diffuse profile</li>
+        </ul>
+        <div class="seg-insight">Low income alone — even when other attributes look acceptable — pushes the bad-loan rate from 7.5% to 14.9%.</div>
+      </div>
+    </div>
+
+    <div class="callout insight">
+      <div class="callout-label">The key takeaway</div>
+      A PD score collapses both failure modes into a single number. LCA shows they are distinct borrower types who need distinct strategies. The intervention that helps Class 1 (debt counseling, payment restructuring) is not the intervention that helps Class 3 (credit rebuilding, secured products).
+    </div>
+
+    <div class="method-note">
+      <strong>Methodology note:</strong> 25,000-loan LendingClub sample, four-class Gaussian Mixture Model, class numbering stabilized by segment size. Single sample, single algorithm — segment names should be read as illustrative of what LCA can surface, not as a universal taxonomy of borrower risk.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="next-section">
+    <h3>More Tutorials</h3>
+    <p>Hands-on notebooks covering applied machine learning for fraud, risk, and beyond.</p>
+    <div class="tutorial-cards">
+      <a class="tutorial-card" href="tutorial-bayesian.html">
+        <div class="card-tag">Tutorial</div>
+        <div class="card-title">Bayesian Analysis</div>
+        <div class="card-status">Predicting loan default risk</div>
+      </a>
+      <a class="tutorial-card" href="#">
+        <div class="card-tag">Current</div>
+        <div class="card-title">Latent Class Analysis</div>
+        <div class="card-status">✓ You are here</div>
+      </a>
+      <a class="tutorial-card" href="#">
+        <div class="card-tag">Coming Soon</div>
+        <div class="card-title">Imbalanced Classes</div>
+        <div class="card-status coming">In development</div>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</footer>
+
+<script>
+  hljs.highlightAll();
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
