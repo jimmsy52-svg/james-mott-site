@@ -88,6 +88,9 @@
   .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
   .card-status { font-size: 0.8rem; color: var(--gray); }
   .card-status.coming { color: #B0B8C0; font-style: italic; }
+  .heatmap-wrap { margin: 1.5rem 0; }
+  .heatmap-caption { font-size: 0.83rem; color: var(--gray); line-height: 1.6; margin-top: 0.6rem; font-style: italic; }
+  .heatmap-caption strong { color: var(--navy); font-style: normal; }
   .method-note { background: #F8F6F2; border: 1px solid var(--lgray); border-radius: 6px; padding: 1rem 1.25rem; font-size: 0.85rem; color: var(--gray); font-style: italic; margin: 2rem 0; }
   footer { background: var(--navy); color: #7A8FA0; text-align: center; padding: 2.5rem 1rem; margin-top: 5rem; font-size: 0.85rem; }
   footer a { color: #A8C4E0; text-decoration: none; }
@@ -394,6 +397,19 @@ plt.show()</code></pre>
     <div class="callout tip">
       <div class="callout-label">Two heatmaps, two questions</div>
       The <strong>column-percent heatmap</strong> answers "what does a typical Class 3 borrower look like?" The <strong>row-percent heatmap</strong> answers "of all borrowers with High DTI, which class are they most likely in?" Use both together for a complete picture.
+    </div>
+
+    <div class="heatmap-wrap">
+      <img src="img/lca_heatmap.png"
+           alt="4-Segment Borrower Profile Heatmap — column percentages within each latent class"
+           style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.12); margin: 1rem 0;">
+      <p class="heatmap-caption">
+        <strong>Figure:</strong> Column-percent heatmap from the 4-class GMM solution on 25,000 LendingClub loans.
+        Each column is one segment; red cells show where attributes concentrate within a class.
+        Class 0 stacks favorable attributes across every dimension.
+        Class 1 is defined entirely by High DTI and Debt Consolidation purpose.
+        Class 3 concentrates Low FICO and High Interest Rate despite acceptable income and DTI.
+      </p>
     </div>
   </div>
 
