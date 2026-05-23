@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<!-- saved from url=(0059)file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html -->
+<!-- saved from url=(0059)file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Imbalanced Classes Tutorial — James C. Mott, Ph.D.</title>
 <link rel="preconnect" href="https://fonts.googleapis.com/">
-<link href="./Imbalanced Classes Tutorial._files/css2" rel="stylesheet">
-<link rel="stylesheet" href="./Imbalanced Classes Tutorial._files/github.min.css">
-<script src="./Imbalanced Classes Tutorial._files/highlight.min.js.download"></script>
-<script src="./Imbalanced Classes Tutorial._files/python.min.js.download"></script>
+<link href="./Imbalanced Classes Tutorial_files/css2" rel="stylesheet">
+<link rel="stylesheet" href="./Imbalanced Classes Tutorial_files/github.min.css">
+<script src="./Imbalanced Classes Tutorial_files/highlight.min.js.download"></script>
+<script src="./Imbalanced Classes Tutorial_files/python.min.js.download"></script>
 <style>
   :root {
     --navy:   #0A1628;
@@ -146,15 +146,15 @@
   <nav class="toc">
     <div class="toc-title">Contents</div>
     <ol>
-      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#trap">The Accuracy Trap</a></li>
-      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#political">The Political Problem</a></li>
-      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#setup">Setup &amp; Imports</a></li>
-      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#data">Simulate the Loan Dataset</a></li>
-      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#baseline">Baseline Model — The Trap in Action</a></li>
-      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#fix1">Fix 1 — Class Weights</a></li>
-      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#fix2">Fix 2 — Threshold Tuning</a></li>
-      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#fix3">Fix 3 — SMOTE</a></li>
-      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#results">Before vs. After: The Full Comparison</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#trap">The Accuracy Trap</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#political">The Political Problem</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#setup">Setup &amp; Imports</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#data">Simulate the Loan Dataset</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#baseline">Baseline Model — The Trap in Action</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#fix1">Fix 1 — Class Weights</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#fix2">Fix 2 — Threshold Tuning</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#fix3">Fix 3 — SMOTE</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#results">Before vs. After: The Full Comparison</a></li>
     </ol>
   </nav>
 
@@ -505,6 +505,33 @@ evaluate(<span class="hljs-string">"Fix 3 — SMOTE + threshold tuning"</span>,
       </tbody>
     </table>
 
+    <h2 style="font-family:&#39;Playfair Display&#39;,serif; margin-top:2rem; margin-bottom:1.25rem;">Understanding the Results</h2>
+
+    <div style="border-top: 1px solid var(--lgray); padding-top: 1.25rem; margin-bottom: 1.25rem;">
+      <p><strong>Baseline (no fix) — Recall 12%, Precision 58%, F1 0.20</strong><br>
+      No imbalance handling at all. The model occasionally stumbles onto a default by chance — catching 12% of them — but misses 88%. Precision of 58% means when it does flag a default, it's right just over half the time. F1 of 0.20 reflects how badly these two numbers are out of balance.</p>
+    </div>
+
+    <div style="border-top: 1px solid var(--lgray); padding-top: 1.25rem; margin-bottom: 1.25rem;">
+      <p><strong>Class weights — Recall 61%, Precision 53%, F1 0.56</strong><br>
+      One parameter change — <code>class_weight='balanced'</code>. Recall jumps from 12% to 61%. The model is now catching the majority of defaults. Precision drops slightly (53%) because by being more aggressive at flagging defaults, it also flags more good loans. But the overall F1 more than doubles. Big gain, zero data manipulation.</p>
+    </div>
+
+    <div style="border-top: 1px solid var(--lgray); padding-top: 1.25rem; margin-bottom: 1.25rem;">
+      <p><strong>Class weights + threshold — Recall 78%, Precision 61%, F1 0.68</strong><br>
+      Same model as above, but now we moved the decision threshold from 0.5 down to ~0.3. The model flags a loan as a default at a lower confidence level — so it catches even more defaults (78%). Crucially, precision actually <em>goes up</em> too (53% → 61%) because the threshold was optimized for F1. This is the sweet spot row.</p>
+    </div>
+
+    <div style="border-top: 1px solid var(--lgray); padding-top: 1.25rem; margin-bottom: 1.25rem;">
+      <p><strong>SMOTE + threshold — Recall 75%, Precision 64%, F1 0.69</strong><br>
+      Synthetic data added to training set, threshold tuned after. Results are very similar to the row above — slightly lower recall, slightly higher precision, essentially the same F1. This tells you something important: <strong>SMOTE didn't add much here</strong>. Class weights + threshold tuning already got you most of the way there with far less complexity.</p>
+    </div>
+
+    <div style="border-top: 1px solid var(--lgray); border-bottom: 1px solid var(--lgray); padding: 1.25rem 0; margin-bottom: 1.5rem;">
+      <p><strong>The big picture message of the whole table:</strong><br>
+      AUC barely moves across all four rows (0.891 → 0.901). The model's underlying ability to rank borrowers by risk was always there. What changed was how we translated that ranking into a decision. That's the lesson — the fix wasn't building a smarter model. It was using the model you already had more intelligently.</p>
+    </div>
+
     <div class="stat-row">
       <div class="stat-box">
         <div class="stat-val bad">0%</div>
@@ -523,8 +550,6 @@ evaluate(<span class="hljs-string">"Fix 3 — SMOTE + threshold tuning"</span>,
         <div class="stat-lbl">Accuracy — after fixes<br>(down from 94%)</div>
       </div>
     </div>
-
-    <div class="callout tip">
       <div class="callout-label">The trade-off is worth it</div>
       Accuracy dropped 7 points. But the model now catches 468 defaults it was completely blind to before. In a real loan portfolio, each of those is a prevented loss. That trade-off is almost always worth making — and it's the conversation you need to be able to have with your stakeholders.
     </div>
@@ -583,7 +608,7 @@ evaluate(<span class="hljs-string">"Fix 3 — SMOTE + threshold tuning"</span>,
         <div class="card-title">Latent Class Analysis</div>
         <div class="card-status">Borrower segmentation</div>
       </a>
-      <a class="tutorial-card" href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#">
+      <a class="tutorial-card" href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_4.html#">
         <div class="card-tag">Current</div>
         <div class="card-title">Imbalanced Classes</div>
         <div class="card-status">✓ You are here</div>
@@ -591,7 +616,7 @@ evaluate(<span class="hljs-string">"Fix 3 — SMOTE + threshold tuning"</span>,
     </div>
   </div>
 
-</div>
+
 
 <footer>
   <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
