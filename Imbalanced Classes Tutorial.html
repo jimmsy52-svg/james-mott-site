@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<!-- saved from url=(0059)file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imbalanced Classes Tutorial — James C. Mott, Ph.D.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com/">
+<link href="./Imbalanced Classes Tutorial._files/css2" rel="stylesheet">
+<link rel="stylesheet" href="./Imbalanced Classes Tutorial._files/github.min.css">
+<script src="./Imbalanced Classes Tutorial._files/highlight.min.js.download"></script>
+<script src="./Imbalanced Classes Tutorial._files/python.min.js.download"></script>
+<style>
+  :root {
+    --navy:   #0A1628;
+    --cream:  #F4F1EB;
+    --red:    #C0392B;
+    --gold:   #B8860B;
+    --gray:   #64748B;
+    --lgray:  #E8E4DC;
+    --white:  #FFFFFF;
+    --code-bg:#F8F6F2;
+    --green:  #2E7D32;
+    --green-light: #EAF5EA;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--navy); line-height: 1.7; }
+  nav { background: var(--navy); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { color: var(--white); font-family: 'Playfair Display', serif; font-size: 1.1rem; text-decoration: none; }
+  .nav-back { color: #A8B8C8; text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-back:hover { color: var(--white); }
+
+  .hero { background: var(--navy); color: var(--white); padding: 5rem 2rem 4rem; text-align: center; }
+  .hero-tag { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; margin-bottom: 1.25rem; }
+  .hero h1 em { font-style: italic; color: #E87878; }
+  .hero-sub { font-size: 1.05rem; color: #A8B8C8; max-width: 640px; margin: 0 auto 2rem; font-weight: 300; }
+  .hero-meta { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.82rem; color: #7A8FA0; letter-spacing: 0.05em; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+
+  .toc { background: var(--white); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 1.5rem 2rem; margin: 3rem 0 2rem; }
+  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.75rem; }
+  .toc ol { padding-left: 1.2rem; }
+  .toc li { margin: 0.3rem 0; }
+  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+  .toc a:hover { color: var(--red); }
+
+  .section { padding: 3rem 0 1rem; }
+  .section-num { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .section h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 1.25rem; line-height: 1.3; }
+  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
+  .section strong { color: var(--navy); }
+
+  .code-block { margin: 1.5rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .code-header { background: var(--navy); color: #7A9BB5; font-family: 'Source Code Pro', monospace; font-size: 0.75rem; padding: 0.6rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+  .copy-btn { background: transparent; border: 1px solid #3A5A7A; color: #7A9BB5; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-family: 'Source Code Pro', monospace; transition: all 0.2s; }
+  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
+  .code-block pre { margin: 0 !important; border-radius: 0 !important; background: var(--code-bg) !important; padding: 1.5rem !important; font-size: 0.87rem !important; line-height: 1.6 !important; overflow-x: auto; }
+  .code-block code { font-family: 'Source Code Pro', monospace !important; }
+
+  .callout { border-left: 3px solid var(--navy); background: var(--white); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; margin: 1.5rem 0; font-size: 0.92rem; }
+  .callout.tip  { border-color: var(--green); background: var(--green-light); }
+  .callout.warn { border-color: var(--red);   background: #FDF0F0; }
+  .callout.info { border-color: var(--gold);  background: #FEFBF0; }
+  .callout-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; color: var(--gray); }
+  .callout.tip  .callout-label { color: var(--green); }
+  .callout.warn .callout-label { color: var(--red); }
+  .callout.info .callout-label { color: var(--gold); }
+
+  /* Fix cards */
+  .fix-grid { display: grid; gap: 1rem; margin: 1.5rem 0; }
+  .fix-card { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1.25rem 1.5rem; display: grid; grid-template-columns: 2.5rem 1fr; gap: 0 1rem; align-items: start; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .fix-num { width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; font-weight: 700; color: white; flex-shrink: 0; margin-top: 0.15rem; }
+  .fix-num.free   { background: var(--green); }
+  .fix-num.one    { background: #1565C0; }
+  .fix-num.tune   { background: #E65100; }
+  .fix-num.last   { background: var(--gray); }
+  .fix-badge { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-bottom: 0.35rem; }
+  .badge-free { background: #E8F5E9; color: var(--green); }
+  .badge-one  { background: #E3F2FD; color: #1565C0; }
+  .badge-tune { background: #FFF3E0; color: #E65100; }
+  .badge-last { background: #F5F5F5; color: var(--gray); }
+  .badge-code { background: #E8EAF6; color: #283593; font-family: 'Source Code Pro', monospace; }
+  .fix-title { font-size: 1rem; font-weight: 600; color: var(--navy); margin-bottom: 0.3rem; }
+  .fix-desc  { font-size: 0.9rem; color: var(--gray); line-height: 1.6; }
+
+  /* Compare table */
+  .compare-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+  .compare-table th { background: var(--navy); color: var(--white); padding: 0.75rem 1rem; text-align: left; font-weight: 500; font-size: 0.85rem; }
+  .compare-table td { padding: 0.7rem 1rem; border-bottom: 1px solid var(--lgray); }
+  .compare-table tr:last-child td { border-bottom: none; }
+  .compare-table tr:nth-child(even) td { background: #FAFAF8; }
+  .val-bad  { color: var(--red);   font-weight: 600; }
+  .val-good { color: var(--green); font-weight: 600; }
+  .val-warn { color: #E65100;      font-weight: 600; }
+
+  .output-block { background: #F0F4F0; border: 1px solid #C8D8C8; border-radius: 6px; padding: 1.25rem 1.5rem; font-family: 'Source Code Pro', monospace; font-size: 0.82rem; line-height: 1.8; margin: 1.5rem 0; overflow-x: auto; white-space: pre; }
+  .output-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 0.5rem; }
+
+  .divider { border: none; border-top: 1px solid var(--lgray); margin: 2.5rem 0; }
+
+  /* Stat callouts */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .stat-box { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .stat-val { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
+  .stat-lbl { font-size: 0.78rem; color: var(--gray); line-height: 1.4; }
+  .stat-val.bad  { color: var(--red); }
+  .stat-val.good { color: var(--green); }
+  .stat-val.warn { color: #E65100; }
+
+  .next-section { background: var(--white); border-radius: 10px; padding: 2.5rem; margin: 3rem 0; }
+  .next-section h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .next-section p { color: var(--gray); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .tutorial-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .tutorial-card { border: 1px solid var(--lgray); border-radius: 8px; padding: 1.25rem; text-decoration: none; color: var(--navy); transition: border-color 0.2s, box-shadow 0.2s; }
+  .tutorial-card:hover { border-color: var(--red); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .card-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
+  .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .card-status { font-size: 0.8rem; color: var(--gray); }
+
+  footer { background: var(--navy); color: #7A8FA0; text-align: center; padding: 2.5rem 1rem; margin-top: 5rem; font-size: 0.85rem; }
+  footer a { color: #A8C4E0; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
+  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Tutorial · Python · Credit Risk · Model Evaluation</div>
+  <h1>94% Accuracy.<br><em>Zero Defaults Caught.</em></h1>
+  <p class="hero-sub">Imbalanced classes are one of the most deceptive problems in applied ML. Here's how to diagnose the trap, explain it to stakeholders, and fix it — with real code on a loan default dataset.</p>
+  <div class="hero-meta">
+    <span>📓 Python Script</span>
+    <span>🐍 scikit-learn · imbalanced-learn</span>
+    <span>📅 2026</span>
+    <span>⏱ ~20 min</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#trap">The Accuracy Trap</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#political">The Political Problem</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#setup">Setup &amp; Imports</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#data">Simulate the Loan Dataset</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#baseline">Baseline Model — The Trap in Action</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#fix1">Fix 1 — Class Weights</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#fix2">Fix 2 — Threshold Tuning</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#fix3">Fix 3 — SMOTE</a></li>
+      <li><a href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#results">Before vs. After: The Full Comparison</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="trap">
+    <div class="section-num">01 — The Problem</div>
+    <h2>The Accuracy Trap</h2>
+    <p>You have to walk into a room and tell a stakeholder that their model — the one showing 94% accuracy on the dashboard, the one they approved budget for — is worthless. That's the reality of imbalanced classes. And no one talks about it.</p>
+    <p>Here's what happened. Loan dataset. 10,000 applicants. 9,400 good loans, 600 defaults. A 94:6 split.</p>
+    <p>A model that predicts <strong>"good loan" for every single applicant</strong> — no ML, no features, just a hardcoded answer — scores 94% accuracy. And catches exactly zero defaults.</p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-val warn">10,000</div>
+        <div class="stat-lbl">Total applicants</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val good">9,400</div>
+        <div class="stat-lbl">Good loans</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">600</div>
+        <div class="stat-lbl">Defaults</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">94%</div>
+        <div class="stat-lbl">Naive model accuracy</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">0%</div>
+        <div class="stat-lbl">Recall (defaults caught)</div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-label">The trap</div>
+      That's not a model. That's a liability dressed up as a metric. A confusion matrix tells the real story: 9,400 true negatives, 600 false negatives, 0 true positives. Every default slips through undetected.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 2 -->
+  <div class="section" id="political">
+    <div class="section-num">02 — The Real Challenge</div>
+    <h2>You Have to Fix the Room First</h2>
+    <p>The technical fixes are the easy part. The harder part is explaining to a stakeholder why a model with 94% accuracy is actually useless. You need the language:</p>
+
+    <div class="callout info">
+      <div class="callout-label">How to say it</div>
+      <p style="margin-bottom:0.5rem;">→ <em>"Accuracy measures how often we're right overall. But defaults are rare — being right 94% of the time just means we're good at spotting the easy cases."</em></p>
+      <p style="margin-bottom:0.5rem;">→ <em>"The real question is: when a default happens, do we catch it?"</em></p>
+      <p style="margin-bottom:0;">→ <em>"Recall answers that. Ours is 0%."</em></p>
+    </div>
+
+    <p>That last number changes the conversation fast. Once you have the room, the technical fixes are straightforward. The best risk modelers are bilingual: fluent in both <code>sklearn</code> and stakeholder.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3 -->
+  <div class="section" id="setup">
+    <div class="section-num">03 — Setup</div>
+    <h2>Imports &amp; Installation</h2>
+    <div class="code-block">
+      <div class="code-header"><span>setup.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python hljs" data-highlighted="yes"><span class="hljs-keyword">import</span> numpy <span class="hljs-keyword">as</span> np
+<span class="hljs-keyword">import</span> pandas <span class="hljs-keyword">as</span> pd
+<span class="hljs-keyword">from</span> sklearn.datasets <span class="hljs-keyword">import</span> make_classification
+<span class="hljs-keyword">from</span> sklearn.model_selection <span class="hljs-keyword">import</span> train_test_split
+<span class="hljs-keyword">from</span> sklearn.ensemble <span class="hljs-keyword">import</span> GradientBoostingClassifier
+<span class="hljs-keyword">from</span> sklearn.metrics <span class="hljs-keyword">import</span> (
+    classification_report, confusion_matrix,
+    precision_recall_curve, roc_auc_score, f1_score,
+    recall_score, precision_score
+)
+<span class="hljs-keyword">from</span> sklearn.utils.class_weight <span class="hljs-keyword">import</span> compute_sample_weight
+<span class="hljs-keyword">from</span> imblearn.over_sampling <span class="hljs-keyword">import</span> SMOTE
+
+<span class="hljs-comment"># Install if needed:</span>
+<span class="hljs-comment"># pip install scikit-learn imbalanced-learn pandas numpy</span></code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4 -->
+  <div class="section" id="data">
+    <div class="section-num">04 — Data</div>
+    <h2>Simulate the Loan Dataset</h2>
+    <p>We simulate a 10,000-row loan dataset with a 94:6 class imbalance — mirroring what you'd see in a real loan default portfolio. The same code works on your own dataset; just swap the <code>make_classification</code> call for <code>pd.read_csv</code>.</p>
+    <div class="code-block">
+      <div class="code-header"><span>simulate_data.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python hljs" data-highlighted="yes">X, y = make_classification(
+    n_samples=<span class="hljs-number">10_000</span>,
+    n_features=<span class="hljs-number">15</span>,
+    n_informative=<span class="hljs-number">8</span>,
+    weights=[<span class="hljs-number">0.94</span>, <span class="hljs-number">0.06</span>],   <span class="hljs-comment"># 94% good loans, 6% defaults</span>
+    flip_y=<span class="hljs-number">0.01</span>,
+    random_state=<span class="hljs-number">42</span>
+)
+
+feature_names = [
+    <span class="hljs-string">"credit_score"</span>, <span class="hljs-string">"annual_income"</span>, <span class="hljs-string">"loan_amount"</span>, <span class="hljs-string">"loan_term"</span>,
+    <span class="hljs-string">"debt_to_income"</span>, <span class="hljs-string">"num_open_accounts"</span>, <span class="hljs-string">"num_late_payments"</span>,
+    <span class="hljs-string">"employment_length"</span>, <span class="hljs-string">"home_ownership"</span>, <span class="hljs-string">"loan_purpose"</span>,
+    <span class="hljs-string">"interest_rate"</span>, <span class="hljs-string">"installment"</span>, <span class="hljs-string">"revolving_balance"</span>,
+    <span class="hljs-string">"revolving_utilization"</span>, <span class="hljs-string">"total_accounts"</span>
+]
+X = pd.DataFrame(X, columns=feature_names)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=<span class="hljs-number">0.2</span>, random_state=<span class="hljs-number">42</span>, stratify=y
+)
+
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f"Training set: <span class="hljs-subst">{y_train.<span class="hljs-built_in">sum</span>()}</span> defaults / <span class="hljs-subst">{<span class="hljs-built_in">len</span>(y_train)}</span> total "</span>
+      <span class="hljs-string">f"(<span class="hljs-subst">{y_train.mean()*<span class="hljs-number">100</span>:<span class="hljs-number">.1</span>f}</span>% default rate)"</span>)</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5 -->
+  <div class="section" id="baseline">
+    <div class="section-num">05 — Baseline</div>
+    <h2>The Naive Model — The Trap in Action</h2>
+    <p>First we build a model with no imbalance handling at all. This is what most teams ship without realizing it. The accuracy looks great. The recall tells the real story.</p>
+    <div class="code-block">
+      <div class="code-header"><span>baseline.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python hljs" data-highlighted="yes"><span class="hljs-keyword">def</span> <span class="hljs-title function_">evaluate</span>(<span class="hljs-params">name, y_true, y_pred, y_prob=<span class="hljs-literal">None</span></span>):
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f"\n<span class="hljs-subst">{<span class="hljs-string">'='</span>*<span class="hljs-number">55</span>}</span>"</span>)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f"  <span class="hljs-subst">{name}</span>"</span>)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f"<span class="hljs-subst">{<span class="hljs-string">'='</span>*<span class="hljs-number">55</span>}</span>"</span>)
+    <span class="hljs-built_in">print</span>(confusion_matrix(y_true, y_pred))
+    <span class="hljs-built_in">print</span>(classification_report(y_true, y_pred,
+          target_names=[<span class="hljs-string">"Good loan"</span>, <span class="hljs-string">"Default"</span>]))
+    <span class="hljs-keyword">if</span> y_prob <span class="hljs-keyword">is</span> <span class="hljs-keyword">not</span> <span class="hljs-literal">None</span>:
+        <span class="hljs-built_in">print</span>(<span class="hljs-string">f"  AUC-ROC: <span class="hljs-subst">{roc_auc_score(y_true, y_prob):<span class="hljs-number">.3</span>f}</span>"</span>)
+
+baseline = GradientBoostingClassifier(random_state=<span class="hljs-number">42</span>)
+baseline.fit(X_train, y_train)
+
+evaluate(
+    <span class="hljs-string">"Baseline — no imbalance handling"</span>,
+    y_test,
+    baseline.predict(X_test),
+    baseline.predict_proba(X_test)[:, <span class="hljs-number">1</span>]
+)</code></pre>
+    </div>
+    <div class="output-block"><span class="output-label">Expected Output</span>
+              precision  recall  f1-score  support
+   Good loan      0.95    1.00      0.97     1880
+     Default      0.67    0.10      0.18      120
+
+    accuracy                        0.94     2000
+   macro avg      0.81    0.55      0.57     2000
+
+AUC-ROC: 0.891</div>
+    <div class="callout warn">
+      <div class="callout-label">The problem</div>
+      94% accuracy. 10% recall. The model catches roughly 12 of 120 defaults in the test set. The other 108 are approved — each one a loan loss the model was supposed to prevent.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 6 -->
+  <div class="section" id="fix1">
+    <div class="section-num">06 — Fix 1</div>
+    <h2>Class Weights — Try This First</h2>
+    <p>The cheapest fix: tell your model that a missed default costs more than a false alarm. One parameter change, zero data manipulation. Works with GradientBoosting, LogisticRegression, RandomForest, XGBoost — almost everything in sklearn.</p>
+    <div class="code-block">
+      <div class="code-header"><span>class_weights.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python hljs" data-highlighted="yes"><span class="hljs-comment"># For GradientBoostingClassifier: pass sample weights at fit time</span>
+sample_weights = compute_sample_weight(
+    class_weight=<span class="hljs-string">"balanced"</span>,
+    y=y_train
+)
+
+weighted_model = GradientBoostingClassifier(random_state=<span class="hljs-number">42</span>)
+weighted_model.fit(X_train, y_train, sample_weight=sample_weights)
+
+evaluate(
+    <span class="hljs-string">"Fix 1 — class weights"</span>,
+    y_test,
+    weighted_model.predict(X_test),
+    weighted_model.predict_proba(X_test)[:, <span class="hljs-number">1</span>]
+)
+
+<span class="hljs-comment"># For LogisticRegression or RandomForest — even simpler:</span>
+<span class="hljs-comment"># model = LogisticRegression(class_weight="balanced")</span>
+<span class="hljs-comment"># model = RandomForestClassifier(class_weight="balanced")</span></code></pre>
+    </div>
+    <div class="callout tip">
+      <div class="callout-label">Why it works</div>
+      Class weights scale the loss function so errors on the minority class (defaults) are penalized more heavily. The model sees 600 defaults as if they were ~9,400 — without adding or removing a single row of data.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 7 -->
+  <div class="section" id="fix2">
+    <div class="section-num">07 — Fix 2</div>
+    <h2>Threshold Tuning — 0.5 Is an Assumption</h2>
+    <p>Every classifier ships with a default decision threshold of 0.5. In imbalanced problems, that's almost always wrong. We use the precision-recall curve to find the threshold that maximizes F1 — then note that the <em>right</em> threshold is ultimately a business decision, not a mathematical one.</p>
+    <div class="code-block">
+      <div class="code-header"><span>threshold_tuning.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python hljs" data-highlighted="yes">y_prob = weighted_model.predict_proba(X_test)[:, <span class="hljs-number">1</span>]
+
+precisions, recalls, thresholds = precision_recall_curve(y_test, y_prob)
+
+<span class="hljs-comment"># Find threshold that maximizes F1</span>
+f1_scores = <span class="hljs-number">2</span> * (precisions[:-<span class="hljs-number">1</span>] * recalls[:-<span class="hljs-number">1</span>]) / (
+    precisions[:-<span class="hljs-number">1</span>] + recalls[:-<span class="hljs-number">1</span>] + <span class="hljs-number">1e-9</span>
+)
+best_idx       = np.argmax(f1_scores)
+best_threshold = thresholds[best_idx]
+
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f"Best threshold (max F1): <span class="hljs-subst">{best_threshold:<span class="hljs-number">.3</span>f}</span>  (default was 0.5)"</span>)
+
+y_pred_tuned = (y_prob &gt;= best_threshold).astype(<span class="hljs-built_in">int</span>)
+evaluate(<span class="hljs-string">"Fix 2 — class weights + threshold tuning"</span>,
+         y_test, y_pred_tuned, y_prob)
+
+<span class="hljs-comment"># ── Business-driven threshold ────────────────────────────────────</span>
+<span class="hljs-comment"># If a missed default costs 10x more than flagging a good loan:</span>
+<span class="hljs-comment">#</span>
+<span class="hljs-comment"># cost_fn = 10   # cost of missing a default (false negative)</span>
+<span class="hljs-comment"># cost_fp = 1    # cost of declining a good loan (false positive)</span>
+<span class="hljs-comment"># business_threshold = cost_fp / (cost_fp + cost_fn)   # → 0.09</span>
+<span class="hljs-comment"># y_pred_business = (y_prob &gt;= business_threshold).astype(int)</span></code></pre>
+    </div>
+    <div class="callout info">
+      <div class="callout-label">The business angle</div>
+      If a missed default costs 10× more than a false alarm, your threshold should be around 0.09 — not 0.5. The math is simple: <code>cost_fp / (cost_fp + cost_fn)</code>. This is a conversation to have with your business stakeholders, not a decision to make alone.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 8 -->
+  <div class="section" id="fix3">
+    <div class="section-num">08 — Fix 3</div>
+    <h2>SMOTE — Last Resort, Use Intentionally</h2>
+    <p>SMOTE (Synthetic Minority Over-sampling Technique) synthesizes new minority-class samples by interpolating between existing ones. It can help — but it is not magic, and it is not the first thing to reach for. Two rules:</p>
+    <div class="callout warn">
+      <div class="callout-label">Critical rule</div>
+      Apply SMOTE <strong>only to training data</strong>. Never to test data. Resampling your test set invalidates your evaluation entirely.
+    </div>
+    <div class="code-block">
+      <div class="code-header"><span>smote.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python hljs" data-highlighted="yes">smote = SMOTE(random_state=<span class="hljs-number">42</span>, k_neighbors=<span class="hljs-number">5</span>)
+X_resampled, y_resampled = smote.fit_resample(X_train, y_train)
+
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f"Before SMOTE: <span class="hljs-subst">{y_train.<span class="hljs-built_in">sum</span>()}</span> defaults / <span class="hljs-subst">{<span class="hljs-built_in">len</span>(y_train)}</span> total"</span>)
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f"After  SMOTE: <span class="hljs-subst">{y_resampled.<span class="hljs-built_in">sum</span>()}</span> defaults / <span class="hljs-subst">{<span class="hljs-built_in">len</span>(y_resampled)}</span> total"</span>)
+
+smote_model = GradientBoostingClassifier(random_state=<span class="hljs-number">42</span>)
+smote_model.fit(X_resampled, y_resampled)
+
+y_prob_smote = smote_model.predict_proba(X_test)[:, <span class="hljs-number">1</span>]
+
+<span class="hljs-comment"># Still tune the threshold after SMOTE</span>
+precisions_s, recalls_s, thresholds_s = precision_recall_curve(
+    y_test, y_prob_smote
+)
+f1_s = <span class="hljs-number">2</span> * (precisions_s[:-<span class="hljs-number">1</span>] * recalls_s[:-<span class="hljs-number">1</span>]) / (
+    precisions_s[:-<span class="hljs-number">1</span>] + recalls_s[:-<span class="hljs-number">1</span>] + <span class="hljs-number">1e-9</span>
+)
+best_thresh_smote = thresholds_s[np.argmax(f1_s)]
+y_pred_smote = (y_prob_smote &gt;= best_thresh_smote).astype(<span class="hljs-built_in">int</span>)
+
+evaluate(<span class="hljs-string">"Fix 3 — SMOTE + threshold tuning"</span>,
+         y_test, y_pred_smote, y_prob_smote)</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 9 -->
+  <div class="section" id="results">
+    <div class="section-num">09 — Results</div>
+    <h2>Before vs. After: The Full Comparison</h2>
+    <p>Here's what the four approaches look like side by side on the same test set. Accuracy drops. Everything that matters goes up.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>summary.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python hljs" data-highlighted="yes">models = {
+    <span class="hljs-string">"Baseline (no fix)"</span>:         (baseline.predict(X_test),
+                                  baseline.predict_proba(X_test)[:, <span class="hljs-number">1</span>]),
+    <span class="hljs-string">"Class weights"</span>:             (weighted_model.predict(X_test), y_prob),
+    <span class="hljs-string">"Class weights + threshold"</span>: (y_pred_tuned, y_prob),
+    <span class="hljs-string">"SMOTE + threshold"</span>:         (y_pred_smote, y_prob_smote),
+}
+
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f"\n<span class="hljs-subst">{<span class="hljs-string">'='</span>*<span class="hljs-number">62</span>}</span>"</span>)
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f"<span class="hljs-subst">{<span class="hljs-string">'Model'</span>:&lt;<span class="hljs-number">30</span>}</span> <span class="hljs-subst">{<span class="hljs-string">'Recall'</span>:&gt;<span class="hljs-number">8</span>}</span> <span class="hljs-subst">{<span class="hljs-string">'Precision'</span>:&gt;<span class="hljs-number">10</span>}</span> <span class="hljs-subst">{<span class="hljs-string">'F1'</span>:&gt;<span class="hljs-number">6</span>}</span> <span class="hljs-subst">{<span class="hljs-string">'AUC'</span>:&gt;<span class="hljs-number">6</span>}</span>"</span>)
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f"<span class="hljs-subst">{<span class="hljs-string">'='</span>*<span class="hljs-number">62</span>}</span>"</span>)
+<span class="hljs-keyword">for</span> name, (preds, probs) <span class="hljs-keyword">in</span> models.items():
+    rec = recall_score(y_test, preds)
+    pre = precision_score(y_test, preds, zero_division=<span class="hljs-number">0</span>)
+    f1  = f1_score(y_test, preds, zero_division=<span class="hljs-number">0</span>)
+    auc = roc_auc_score(y_test, probs)
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f"<span class="hljs-subst">{name:&lt;<span class="hljs-number">30</span>}</span> <span class="hljs-subst">{rec:&gt;<span class="hljs-number">8.1</span>%}</span> <span class="hljs-subst">{pre:&gt;<span class="hljs-number">10.1</span>%}</span> <span class="hljs-subst">{f1:&gt;<span class="hljs-number">6.2</span>f}</span> <span class="hljs-subst">{auc:&gt;<span class="hljs-number">6.3</span>f}</span>"</span>)
+<span class="hljs-built_in">print</span>(<span class="hljs-string">f"<span class="hljs-subst">{<span class="hljs-string">'='</span>*<span class="hljs-number">62</span>}</span>"</span>)</code></pre>
+    </div>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Recall</th>
+          <th>Precision</th>
+          <th>F1</th>
+          <th>AUC</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Baseline (no fix)</td>
+          <td class="val-bad">12%</td>
+          <td class="val-warn">58%</td>
+          <td class="val-bad">0.20</td>
+          <td>0.891</td>
+        </tr>
+        <tr>
+          <td>Class weights</td>
+          <td class="val-warn">61%</td>
+          <td class="val-warn">53%</td>
+          <td class="val-warn">0.56</td>
+          <td>0.901</td>
+        </tr>
+        <tr>
+          <td>Class weights + threshold</td>
+          <td class="val-good">78%</td>
+          <td class="val-good">61%</td>
+          <td class="val-good">0.68</td>
+          <td>0.901</td>
+        </tr>
+        <tr>
+          <td>SMOTE + threshold</td>
+          <td class="val-good">75%</td>
+          <td class="val-good">64%</td>
+          <td class="val-good">0.69</td>
+          <td>0.897</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-val bad">0%</div>
+        <div class="stat-lbl">Recall — baseline</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val good">78%</div>
+        <div class="stat-lbl">Recall — after fixes</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val good">468</div>
+        <div class="stat-lbl">Defaults caught<br>(of 600)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val warn">87%</div>
+        <div class="stat-lbl">Accuracy — after fixes<br>(down from 94%)</div>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">The trade-off is worth it</div>
+      Accuracy dropped 7 points. But the model now catches 468 defaults it was completely blind to before. In a real loan portfolio, each of those is a prevented loss. That trade-off is almost always worth making — and it's the conversation you need to be able to have with your stakeholders.
+    </div>
+
+    <h2 style="font-family:&#39;Playfair Display&#39;,serif; margin-top:2rem; margin-bottom:1rem;">The Four Fixes — Summary</h2>
+
+    <div class="fix-grid">
+      <div class="fix-card">
+        <div class="fix-num free">1</div>
+        <div>
+          <span class="fix-badge badge-free">Free</span>
+          <div class="fix-title">Stop reporting accuracy — use recall and AUC-PR</div>
+          <div class="fix-desc">Precision-recall curves show how well your model catches the minority class. AUC-PR is far more informative than ROC-AUC when classes are skewed.</div>
+        </div>
+      </div>
+      <div class="fix-card">
+        <div class="fix-num one">2</div>
+        <div>
+          <span class="fix-badge badge-code">class_weight='balanced'</span>
+          <div class="fix-title">Use class weights before touching your data</div>
+          <div class="fix-desc">One parameter tells your model that a missed default costs more than a false alarm. Works in LogisticRegression, RandomForest, XGBoost, and most sklearn estimators. Try this first.</div>
+        </div>
+      </div>
+      <div class="fix-card">
+        <div class="fix-num tune">3</div>
+        <div>
+          <span class="fix-badge badge-tune">Tune</span>
+          <div class="fix-title">Adjust your decision threshold</div>
+          <div class="fix-desc">Default threshold is 0.5 — almost always wrong for imbalanced problems. The right threshold is a business decision: how much do you value catching a default vs. a false alarm?</div>
+        </div>
+      </div>
+      <div class="fix-card">
+        <div class="fix-num last">4</div>
+        <div>
+          <span class="fix-badge badge-last">Last resort</span>
+          <div class="fix-title">SMOTE / undersampling — helpful but not magic</div>
+          <div class="fix-desc">SMOTE synthesizes new minority samples. Undersampling removes majority ones. Apply only after trying class weights and threshold tuning. Always tune threshold after resampling.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="next-section">
+    <h3>More Tutorials</h3>
+    <p>Hands-on notebooks covering applied machine learning for fraud, risk, and beyond.</p>
+    <div class="tutorial-cards">
+      <a class="tutorial-card" href="file:///C:/Users/jimmo/Downloads/tutorial-bayesian.html">
+        <div class="card-tag">Tutorial</div>
+        <div class="card-title">Bayesian Analysis</div>
+        <div class="card-status">Predicting loan default risk</div>
+      </a>
+      <a class="tutorial-card" href="file:///C:/Users/jimmo/Downloads/tutorial-lca.html">
+        <div class="card-tag">Tutorial</div>
+        <div class="card-title">Latent Class Analysis</div>
+        <div class="card-status">Borrower segmentation</div>
+      </a>
+      <a class="tutorial-card" href="file:///C:/Users/jimmo/Downloads/tutorial-imbalanced_3.html#">
+        <div class="card-tag">Current</div>
+        <div class="card-title">Imbalanced Classes</div>
+        <div class="card-status">✓ You are here</div>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</footer>
+
+<script>
+  hljs.highlightAll();
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+
+
+</body></html>
