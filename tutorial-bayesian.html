@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bayesian Analysis Tutorial — James C. Mott, Ph.D.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root {
+    --navy:   #0A1628;
+    --cream:  #F4F1EB;
+    --red:    #C0392B;
+    --gold:   #B8860B;
+    --gray:   #64748B;
+    --lgray:  #E8E4DC;
+    --white:  #FFFFFF;
+    --code-bg:#F8F6F2;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--cream);
+    color: var(--navy);
+    line-height: 1.7;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--navy);
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo {
+    color: var(--white);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    text-decoration: none;
+  }
+  .nav-back {
+    color: var(--lgray);
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-back:hover { color: var(--white); }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--navy);
+    color: var(--white);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+  }
+  .hero-tag {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 1rem;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    line-height: 1.2;
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 em { font-style: italic; color: #A8C4E0; }
+  .hero-sub {
+    font-size: 1.05rem;
+    color: #A8B8C8;
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    font-weight: 300;
+  }
+  .hero-meta {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+    font-size: 0.82rem;
+    color: #7A8FA0;
+    letter-spacing: 0.05em;
+  }
+  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
+
+  /* ── LAYOUT ── */
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--white);
+    border-left: 3px solid var(--navy);
+    border-radius: 0 8px 8px 0;
+    padding: 1.5rem 2rem;
+    margin: 3rem 0 2rem;
+  }
+  .toc-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 0.75rem;
+  }
+  .toc ol { padding-left: 1.2rem; }
+  .toc li { margin: 0.3rem 0; }
+  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+  .toc a:hover { color: var(--red); }
+
+  /* ── SECTIONS ── */
+  .section { padding: 3rem 0 1rem; }
+  .section-num {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 0.5rem;
+  }
+  .section h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem;
+    margin-bottom: 1.25rem;
+    line-height: 1.3;
+  }
+  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
+
+  /* ── CODE BLOCKS ── */
+  .code-block {
+    margin: 1.5rem 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .code-header {
+    background: var(--navy);
+    color: #7A9BB5;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.75rem;
+    padding: 0.6rem 1.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    letter-spacing: 0.05em;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid #3A5A7A;
+    color: #7A9BB5;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Source Code Pro', monospace;
+    transition: all 0.2s;
+  }
+  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
+  .code-block pre {
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: var(--code-bg) !important;
+    padding: 1.5rem !important;
+    font-size: 0.87rem !important;
+    line-height: 1.6 !important;
+    overflow-x: auto;
+  }
+  .code-block code { font-family: 'Source Code Pro', monospace !important; }
+
+  /* ── CALLOUT BOXES ── */
+  .callout {
+    border-left: 3px solid var(--navy);
+    background: var(--white);
+    padding: 1rem 1.25rem;
+    border-radius: 0 6px 6px 0;
+    margin: 1.5rem 0;
+    font-size: 0.92rem;
+  }
+  .callout.tip  { border-color: #2E7D32; background: #F1F8F1; }
+  .callout.warn { border-color: var(--gold); background: #FEFBF0; }
+  .callout-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+    color: var(--gray);
+  }
+  .callout.tip  .callout-label { color: #2E7D32; }
+  .callout.warn .callout-label { color: var(--gold); }
+
+  /* ── OUTPUT TABLE ── */
+  .output-block {
+    background: #F0F4F0;
+    border: 1px solid #C8D8C8;
+    border-radius: 6px;
+    padding: 1.25rem 1.5rem;
+    font-family: 'Source Code Pro', monospace;
+    font-size: 0.82rem;
+    line-height: 1.8;
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .output-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #2E7D32;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--lgray);
+    margin: 2.5rem 0;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--navy);
+    color: #7A8FA0;
+    text-align: center;
+    padding: 2.5rem 1rem;
+    margin-top: 5rem;
+    font-size: 0.85rem;
+  }
+  footer a { color: #A8C4E0; text-decoration: none; }
+
+  /* ── NEXT TUTORIALS ── */
+  .next-section {
+    background: var(--white);
+    border-radius: 10px;
+    padding: 2.5rem;
+    margin: 3rem 0;
+  }
+  .next-section h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+    color: var(--navy);
+  }
+  .next-section p { color: var(--gray); font-size: 0.9rem; margin-bottom: 1.5rem; }
+  .tutorial-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
+  .tutorial-card {
+    border: 1px solid var(--lgray);
+    border-radius: 8px;
+    padding: 1.25rem;
+    text-decoration: none;
+    color: var(--navy);
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .tutorial-card:hover { border-color: var(--navy); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+  .card-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
+  .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
+  .card-status { font-size: 0.8rem; color: var(--gray); }
+  .card-status.coming { color: #B0B8C0; font-style: italic; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
+  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Tutorial · Python · Probabilistic Reasoning</div>
+  <h1>An Introduction to<br><em>Bayesian Analysis</em></h1>
+  <p class="hero-sub">How to set a prior, incorporate new evidence, and predict loan default risk using a Bayesian Network — with real code you can run today.</p>
+  <div class="hero-meta">
+    <span>📓 Jupyter Notebook</span>
+    <span>🐍 Python · pgmpy · scikit-learn</span>
+    <span>📅 2026</span>
+    <span>⏱ ~20 min</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#overview">Overview & What You'll Learn</a></li>
+      <li><a href="#setup">Setup & Imports</a></li>
+      <li><a href="#data">Load & Prepare the Data</a></li>
+      <li><a href="#discretize">Discretize Features</a></li>
+      <li><a href="#network">Define the Bayesian Network</a></li>
+      <li><a href="#inference">Run Inference</a></li>
+      <li><a href="#grid">Loop Through All Possibilities</a></li>
+      <li><a href="#results">Interpret the Results</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="overview">
+    <div class="section-num">01 — Overview</div>
+    <h2>What You'll Learn</h2>
+    <p>Bayesian analysis lets you reason about uncertainty in a principled way — starting from a prior belief, then updating that belief as new evidence arrives. In this tutorial, we apply that idea to a real problem: <strong>predicting the probability that a loan will default</strong> given what we know about the borrower.</p>
+    <p>We build a <strong>Bayesian Network</strong> using three features from a LendingClub-style dataset — interest rate, debt-to-income ratio, and FICO score — and use it to compute the posterior probability of default across all 27 possible combinations of those features.</p>
+    <div class="callout tip">
+      <div class="callout-label">What you need</div>
+      A loan dataset with columns: <code>int_rate</code>, <code>dti</code>, <code>fico_range_high</code>, <code>bad_loan</code>. The code runs in Jupyter, Google Colab, or Spyder.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 2 -->
+  <div class="section" id="setup">
+    <div class="section-num">02 — Setup</div>
+    <h2>Imports & Installation</h2>
+    <p>Install <code>pgmpy</code> if you haven't already, then import everything we need.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span>setup.py</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre><code class="language-python">import warnings
+warnings.filterwarnings('ignore')
+
+# Install pgmpy if needed:
+# !pip install pgmpy
+
+import pandas as pd
+from sklearn.preprocessing import KBinsDiscretizer
+from pgmpy.models import DiscreteBayesianNetwork
+from pgmpy.estimators import BayesianEstimator
+from pgmpy.inference import VariableElimination</code></pre>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-label">Note</div>
+      Use <code>DiscreteBayesianNetwork</code> (not <code>BayesianNetwork</code>) — it's the current recommended class in pgmpy. The older name still works but triggers deprecation warnings.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3 -->
+  <div class="section" id="data">
+    <div class="section-num">03 — Data</div>
+    <h2>Load & Prepare the Dataset</h2>
+    <p>We select the four columns we need and drop any rows with missing values. The <code>bad_loan</code> column is our target — 1 means the loan defaulted, 0 means it was repaid.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span>load_data.py</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre><code class="language-python"># Load your dataset — update the path to match your file
+df = pd.read_csv("lendingclub_sample_25000.csv")
+
+# Select relevant columns and drop missing values
+df = df[['int_rate', 'dti', 'fico_range_high', 'bad_loan']].dropna()
+df['bad_loan'] = pd.to_numeric(df['bad_loan'], errors='coerce')
+df = df.dropna()
+
+print(f"Dataset shape: {df.shape}")
+print(f"Overall default rate: {df['bad_loan'].mean():.1%}")</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4 -->
+  <div class="section" id="discretize">
+    <div class="section-num">04 — Preprocessing</div>
+    <h2>Discretize Features into Bins</h2>
+    <p>Bayesian Networks work with discrete variables. We convert our three continuous features into three bins each — Low, Medium, High — using quantile-based binning so each bin has roughly the same number of observations.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span>discretize.py</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre><code class="language-python">bin_features = ['int_rate', 'dti', 'fico_range_high']
+
+discretizer = KBinsDiscretizer(
+    n_bins=3,
+    encode='ordinal',
+    strategy='quantile'   # equal-frequency bins
+)
+
+df[bin_features] = discretizer.fit_transform(df[bin_features])
+df[bin_features] = df[bin_features].astype(int)
+df['bad_loan']   = df['bad_loan'].astype(int)
+
+# Encoding: 0 = Low, 1 = Medium, 2 = High</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">Why quantile binning?</div>
+      Quantile binning ensures each bin contains roughly equal numbers of observations — important for reliable probability estimates. Equal-width binning can leave some bins nearly empty when data is skewed.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5 -->
+  <div class="section" id="network">
+    <div class="section-num">05 — Model</div>
+    <h2>Define the Bayesian Network</h2>
+    <p>We define the graph structure: each of our three features has a directed edge to <code>bad_loan</code>. This encodes our prior belief that interest rate, DTI, and FICO score each independently influence default risk. We then fit the model using a Bayesian Estimator with a BDeu prior (Bayesian Dirichlet equivalent uniform), which handles small sample sizes gracefully.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span>bayesian_network.py</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre><code class="language-python">model = DiscreteBayesianNetwork()
+
+model.add_nodes_from(['int_rate', 'dti', 'fico_range_high', 'bad_loan'])
+
+model.add_edges_from([
+    ('int_rate',      'bad_loan'),
+    ('dti',           'bad_loan'),
+    ('fico_range_high','bad_loan')
+])
+
+# Fit using Bayesian Estimator with BDeu prior
+model.fit(df, estimator=BayesianEstimator, prior_type='BDeu')
+
+# Inspect the conditional probability distributions
+for cpd in model.get_cpds():
+    print("CPD of", cpd.variable)
+    print(cpd)
+
+# Set up inference engine
+inference = VariableElimination(model)</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 6 -->
+  <div class="section" id="inference">
+    <div class="section-num">06 — Inference</div>
+    <h2>Query the Model</h2>
+    <p>Now we can ask the model: <em>"Given a borrower with high interest rate, high DTI, and low FICO score — what is the probability of default?"</em> This is the posterior probability after updating our prior with the evidence.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span>inference.py</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre><code class="language-python"># Query: high interest rate (2), high DTI (2), low FICO (0)
+query = inference.query(
+    variables=['bad_loan'],
+    evidence={
+        'int_rate':       2,   # High
+        'dti':            2,   # High
+        'fico_range_high':0    # Low
+    }
+)
+
+print(query)
+# Encoding reminder: 0=Low, 1=Medium, 2=High</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Expected Output</span>
++-------------+------------------+
+| bad_loan    |   phi(bad_loan)  |
++=============+==================+
+| bad_loan(0) |          0.3241  |
++-------------+------------------+
+| bad_loan(1) |          0.6759  |
++-------------+------------------+</div>
+
+    <p>The model estimates a ~68% probability of default for this high-risk profile — substantially above the baseline default rate in the dataset.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 7 -->
+  <div class="section" id="grid">
+    <div class="section-num">07 — Grid Search</div>
+    <h2>Loop Through All 27 Combinations</h2>
+    <p>Rather than querying one profile at a time, we iterate through all 3×3×3 = 27 combinations of feature values and compute the default probability for each. This gives us a complete risk grid.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span>risk_grid.py</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre><code class="language-python">import itertools
+
+rows = []
+for i, j, k in itertools.product(range(3), repeat=3):
+    q = inference.query(
+        variables=['bad_loan'],
+        evidence={'int_rate': i, 'dti': j, 'fico_range_high': k}
+    )
+    prob = q.values[1]   # probability that bad_loan = 1
+    rows.append({
+        'int_rate':       i,
+        'dti':            j,
+        'fico_range_high':k,
+        'P(bad_loan)':    prob
+    })
+
+df_results = pd.DataFrame(rows)
+
+# Map numeric bins back to readable labels
+label_map = {0: 'Low', 1: 'Medium', 2: 'High'}
+df_results['int_rate']        = df_results['int_rate'].map(label_map)
+df_results['dti']             = df_results['dti'].map(label_map)
+df_results['fico_range_high'] = df_results['fico_range_high'].map(label_map)
+
+# Round and display
+df_results = df_results.round(3)
+
+# Optional: save to CSV
+# df_results.to_csv("bayesian_bad_loan_risk.csv", index=False)</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 8 -->
+  <div class="section" id="results">
+    <div class="section-num">08 — Results</div>
+    <h2>Interpret the Risk Grid</h2>
+    <p>Sort the results to surface the highest-risk borrower profiles. The table below shows what the model output looks like — your exact numbers will vary based on your dataset.</p>
+
+    <div class="code-block">
+      <div class="code-header">
+        <span>results.py</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre><code class="language-python">print("Overall default rate:", df['bad_loan'].mean().round(3))
+print()
+print(
+    df_results
+    .sort_values('P(bad_loan)', ascending=False)
+    .to_string(index=False)
+)</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Sample Output</span>
+Overall default rate: 0.142
+
+int_rate     dti  fico_range_high  P(bad_loan)
+    High    High              Low        0.676
+    High  Medium              Low        0.598
+  Medium    High              Low        0.541
+    High    High           Medium        0.487
+    High     Low              Low        0.463
+      ...
+     Low     Low             High        0.071</div>
+
+    <div class="callout tip">
+      <div class="callout-label">Key Insight</div>
+      The highest-risk profile (High rate · High DTI · Low FICO) has nearly <strong>5× the default probability</strong> of the lowest-risk profile. The Bayesian Network quantifies what underwriters already know intuitively — and makes it actionable.
+    </div>
+
+    <p>This risk grid can feed directly into a credit scorecard, a loan approval threshold system, or a monitoring dashboard — giving you a probabilistic foundation for every decision.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- NEXT TUTORIALS -->
+  <div class="next-section">
+    <h3>More Tutorials</h3>
+    <p>Hands-on notebooks covering applied machine learning for fraud, risk, and beyond.</p>
+    <div class="tutorial-cards">
+      <a class="tutorial-card" href="#">
+        <div class="card-tag">Current</div>
+        <div class="card-title">Bayesian Analysis</div>
+        <div class="card-status">✓ You are here</div>
+      </a>
+      <a class="tutorial-card" href="#">
+        <div class="card-tag">Coming Soon</div>
+        <div class="card-title">Imbalanced Classes</div>
+        <div class="card-status coming">In development</div>
+      </a>
+      <a class="tutorial-card" href="#">
+        <div class="card-tag">Coming Soon</div>
+        <div class="card-title">Latent Class Analysis</div>
+        <div class="card-status coming">In development</div>
+      </a>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<footer>
+  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</footer>
+
+<script>
+  hljs.highlightAll();
+
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
