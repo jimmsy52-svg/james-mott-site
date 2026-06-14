@@ -151,7 +151,7 @@
       <li><a href="#compute">Compute SHAP Values</a></li>
       <li><a href="#summary">Figure 1: Feature Importance Bar Chart</a></li>
       <li><a href="#beeswarm">Figure 2: Beeswarm Plot</a></li>
-      <li><a href="#waterfall">Figures 3 and 4: Waterfall Plots</a></li>
+      <li><a href="#waterfall">Figures 3, 4 and 5: Waterfall Plots</a></li>
       <li><a href="#regulatory">The Regulatory Angle</a></li>
       <li><a href="#limitations">Honest Limitations</a></li>
     </ol>
@@ -457,27 +457,28 @@ plt.savefig("shap_waterfall_lowrisk.png", dpi=200, bbox_inches='tight')
 plt.show()</code></pre>
     </div>
 
-    <div class="waterfall-pair">
-      <div>
-        <div class="fig-label">Figure 3 — High-Risk Borrower (P = 60%)</div>
-        <img src="img/shap_waterfall_highrisk.png"
-             alt="SHAP waterfall for high-risk borrower showing all five features pushing toward default, interest rate contributing plus 0.15"
-             style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.10);">
-      </div>
-      <div>
-        <div class="fig-label">Figure 4 — Low-Risk Borrower (P = 0%)</div>
-        <img src="img/shap_waterfall_lowrisk.png"
-             alt="SHAP waterfall for low-risk borrower showing all five features pulling toward safety, interest rate contributing minus 0.13"
-             style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.10);">
-      </div>
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 3 — High-Risk Borrower (P = 60%)</div>
+      <img src="img/shap_waterfall_highrisk.png"
+           alt="SHAP waterfall for high-risk borrower showing all five features pushing toward default, interest rate contributing plus 0.15"
+           style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.10);">
+      <p class="fig-caption">Every feature pushes toward default. Interest rate alone moves the prediction from 21.1% to 36%.</p>
     </div>
 
-    <div class="fig-wrap" style="margin-top:1.5rem;">
-      <div class="fig-label">Figure 5 — Medium-Risk Borrower (P ≈ 20%)</div>
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 4 — Medium-Risk Borrower (P ≈ 20%)</div>
       <img src="img/shap_waterfall_midrisk.png"
-           alt="SHAP waterfall for medium-risk borrower showing mixed positive and negative SHAP values"
+           alt="SHAP waterfall for medium-risk borrower showing mixed positive and negative SHAP values near the baseline"
            style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.10);">
-      <p class="fig-caption"><strong>Note:</strong> This borrower was selected as the one closest to 20% predicted default probability — just below the portfolio baseline of 21.1%. Unlike the high and low-risk borrowers where every feature pointed the same direction, this borrower has features pushing in opposite directions. That mixed pattern is what makes borderline cases genuinely difficult — and where SHAP is most operationally useful.</p>
+      <p class="fig-caption">Features push in opposite directions — the model is weighing competing signals. This is the borderline case where SHAP is most operationally useful. Selected as the borrower closest to the 20% predicted default probability in the sample.</p>
+    </div>
+
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 5 — Low-Risk Borrower (P = 0%)</div>
+      <img src="img/shap_waterfall_lowrisk.png"
+           alt="SHAP waterfall for low-risk borrower showing all five features pulling toward safety, interest rate contributing minus 0.13"
+           style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.10);">
+      <p class="fig-caption">Every feature pulls toward safety. The 5.32% interest rate alone drops the prediction from 21.1% to roughly 8%.</p>
     </div>
 
     <p class="fig-caption" style="margin-bottom:1.5rem;"><strong>How to read the waterfall:</strong> The x-axis starts at the baseline (E[f(X)] = 0.211, the portfolio average). Each bar shows how much that feature pushed the prediction right (toward default, red) or left (toward safety, blue). f(x) at the top is the final prediction.</p>
