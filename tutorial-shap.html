@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SHAP Tutorial — James C. Mott, Ph.D.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root {
+    --navy:   #0A1628;
+    --cream:  #F4F1EB;
+    --red:    #C0392B;
+    --gold:   #B8860B;
+    --gray:   #64748B;
+    --lgray:  #E8E4DC;
+    --white:  #FFFFFF;
+    --code-bg:#F8F6F2;
+    --green:  #2E7D32;
+    --green-light: #EAF5EA;
+    --purple: #6A0DAD;
+    --purple-light: #F5F0FF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--navy); line-height: 1.7; }
+
+  nav { background: var(--navy); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { color: var(--white); font-family: 'Playfair Display', serif; font-size: 1.1rem; text-decoration: none; }
+  .nav-back { color: #A8B8C8; text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-back:hover { color: var(--white); }
+
+  .hero { background: var(--navy); color: var(--white); padding: 5rem 2rem 4rem; text-align: center; }
+  .hero-tag { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; margin-bottom: 1.25rem; }
+  .hero h1 em { font-style: italic; color: #C8A8E0; }
+  .hero-sub { font-size: 1.05rem; color: #A8B8C8; max-width: 660px; margin: 0 auto 2rem; font-weight: 300; }
+  .hero-meta { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.82rem; color: #7A8FA0; letter-spacing: 0.05em; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+
+  .toc { background: var(--white); border-left: 3px solid var(--purple); border-radius: 0 8px 8px 0; padding: 1.5rem 2rem; margin: 3rem 0 2rem; }
+  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.75rem; }
+  .toc ol { padding-left: 1.2rem; }
+  .toc li { margin: 0.3rem 0; }
+  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+  .toc a:hover { color: var(--purple); }
+
+  .section { padding: 3rem 0 1rem; }
+  .section-num { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .section h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 1.25rem; line-height: 1.3; }
+  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
+  .section strong { color: var(--navy); }
+
+  .code-block { margin: 1.5rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .code-header { background: var(--navy); color: #7A9BB5; font-family: 'Source Code Pro', monospace; font-size: 0.75rem; padding: 0.6rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+  .copy-btn { background: transparent; border: 1px solid #3A5A7A; color: #7A9BB5; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-family: 'Source Code Pro', monospace; transition: all 0.2s; }
+  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
+  .code-block pre { margin: 0 !important; border-radius: 0 !important; background: var(--code-bg) !important; padding: 1.5rem !important; font-size: 0.87rem !important; line-height: 1.6 !important; overflow-x: auto; }
+  .code-block code { font-family: 'Source Code Pro', monospace !important; }
+
+  .callout { border-left: 3px solid var(--navy); background: var(--white); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; margin: 1.5rem 0; font-size: 0.92rem; }
+  .callout.tip    { border-color: var(--green);  background: var(--green-light); }
+  .callout.warn   { border-color: var(--red);    background: #FDF0F0; }
+  .callout.info   { border-color: var(--gold);   background: #FEFBF0; }
+  .callout.key    { border-color: var(--purple);  background: var(--purple-light); }
+  .callout-label  { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .callout.tip  .callout-label  { color: var(--green); }
+  .callout.warn .callout-label  { color: var(--red); }
+  .callout.info .callout-label  { color: var(--gold); }
+  .callout.key  .callout-label  { color: var(--purple); }
+
+  .output-block { background: #F0F4F0; border: 1px solid #C8D8C8; border-radius: 6px; padding: 1.25rem 1.5rem; font-family: 'Source Code Pro', monospace; font-size: 0.82rem; line-height: 1.8; margin: 1.5rem 0; overflow-x: auto; white-space: pre; }
+  .output-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 0.5rem; }
+
+  /* Figure / image blocks */
+  .fig-wrap { margin: 2rem 0; }
+  .fig-wrap img { width: 100%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); }
+  .fig-caption { font-size: 0.83rem; color: var(--gray); line-height: 1.6; margin-top: 0.65rem; font-style: italic; padding: 0 0.25rem; }
+  .fig-caption strong { color: var(--navy); font-style: normal; }
+  .fig-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--purple); margin-bottom: 0.4rem; }
+
+  /* Waterfall two-up */
+  .waterfall-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0; }
+  @media (max-width: 680px) { .waterfall-pair { grid-template-columns: 1fr; } }
+
+  /* Feature breakdown list */
+  .feature-list { list-style: none; padding: 0; margin: 1rem 0 1.25rem; }
+  .feature-list li { display: flex; gap: 0.75rem; padding: 0.55rem 0; border-bottom: 1px solid var(--lgray); font-size: 0.93rem; align-items: baseline; }
+  .feature-list li:last-child { border-bottom: none; }
+  .shap-val { font-family: 'Source Code Pro', monospace; font-size: 0.88rem; font-weight: 700; min-width: 3rem; }
+  .shap-val.pos { color: var(--red); }
+  .shap-val.neg { color: #1565C0; }
+  .feature-name { font-weight: 600; color: var(--navy); min-width: 10rem; }
+  .feature-detail { color: var(--gray); font-size: 0.88rem; }
+
+  /* Stat row */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .stat-box { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .stat-val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
+  .stat-lbl { font-size: 0.78rem; color: var(--gray); line-height: 1.4; }
+  .stat-val.bad  { color: var(--red); }
+  .stat-val.good { color: var(--green); }
+  .stat-val.purple { color: var(--purple); }
+
+  .divider { border: none; border-top: 1px solid var(--lgray); margin: 2.5rem 0; }
+
+  /* Adverse action table */
+  .aa-table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.9rem; }
+  .aa-table th { background: var(--navy); color: var(--white); padding: 0.65rem 1rem; text-align: left; font-weight: 500; font-size: 0.82rem; }
+  .aa-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--lgray); }
+  .aa-table tr:last-child td { border-bottom: none; }
+  .aa-table tr:nth-child(even) td { background: #FAFAF8; }
+  .rank { font-weight: 700; color: var(--purple); }
+
+  footer { background: var(--navy); color: #7A8FA0; text-align: center; padding: 2.5rem 1rem; margin-top: 5rem; font-size: 0.85rem; }
+  footer a { color: #A8C4E0; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
+  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Tutorial · Python · Explainability · Credit Risk</div>
+  <h1>Your Model Made a Decision.<br><em>Can You Explain It?</em></h1>
+  <p class="hero-sub">SHAP gives you a mathematically grounded, feature-level explanation for every individual prediction — including exactly why a borrower was declined. Here is how to generate and interpret it on real LendingClub data.</p>
+  <div class="hero-meta">
+    <span>🐍 Python Script</span>
+    <span>📊 shap · scikit-learn · pandas</span>
+    <span>📅 2026</span>
+    <span>⏱ ~25 min</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#problem">The Problem SHAP Solves</a></li>
+      <li><a href="#intuition">The Intuition: What SHAP Actually Measures</a></li>
+      <li><a href="#setup">Setup and Imports</a></li>
+      <li><a href="#model">Train the Random Forest</a></li>
+      <li><a href="#compute">Compute SHAP Values</a></li>
+      <li><a href="#summary">Figure 1: Feature Importance Bar Chart</a></li>
+      <li><a href="#beeswarm">Figure 2: Beeswarm Plot</a></li>
+      <li><a href="#waterfall">Figures 3 and 4: Waterfall Plots</a></li>
+      <li><a href="#regulatory">The Regulatory Angle</a></li>
+      <li><a href="#limitations">Honest Limitations</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="problem">
+    <div class="section-num">01 — The Problem</div>
+    <h2>The Problem SHAP Solves</h2>
+    <p>In the previous tutorial we showed why Random Forest is more stable than a single decision tree: a routine 20% monthly portfolio refresh caused 100% of decision tree splits to change, while the Random Forest predictions shifted by only 0.8%. So you chose the stable model.</p>
+    <p>But stability came at a cost. You can no longer draw your model on a whiteboard. You have 500 trees voting simultaneously, and no single tree tells the story of why any individual borrower was flagged.</p>
+    <p>Then the declined borrower calls. Your credit committee asks. Your compliance officer needs an answer. Under the Equal Credit Opportunity Act, the borrower has a legal right to know why.</p>
+
+    <div class="callout key">
+      <div class="callout-label">What SHAP does</div>
+      SHAP assigns every feature a precise numerical contribution to every individual prediction. It tells you not just which features matter overall, but exactly how much each feature pushed this specific borrower's prediction up or down — and why.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-val purple">21.1%</div>
+        <div class="stat-lbl">Portfolio baseline default rate</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">60%</div>
+        <div class="stat-lbl">High-risk borrower prediction</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val good">0%</div>
+        <div class="stat-lbl">Low-risk borrower prediction</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">3x</div>
+        <div class="stat-lbl">Interest rate SHAP dominance over other features</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 2 -->
+  <div class="section" id="intuition">
+    <div class="section-num">02 — The Intuition</div>
+    <h2>What SHAP Actually Measures</h2>
+    <p>SHAP stands for SHapley Additive exPlanations. The concept comes from game theory, specifically from work by Nobel Prize-winning economist Lloyd Shapley in the 1950s.</p>
+    <p>Here is the intuition without the math.</p>
+    <p>Imagine five players on a team win a championship. The prize money needs to be divided fairly. Each player contributed differently: some scored more points, some played better defense, some were injured part of the season. How do you divide the prize?</p>
+    <p>Shapley's answer: measure how much each player contributed to every possible combination of teammates. A player who consistently made the team better, regardless of who else was playing, deserves a larger share.</p>
+    <p>SHAP applies exactly this logic to features in a machine learning model. For each prediction, it asks: how much did each feature contribute to pushing this result away from the baseline? A feature that consistently pushed predictions toward default gets a large positive SHAP value. One that consistently pulled toward safety gets a large negative value.</p>
+
+    <div class="callout tip">
+      <div class="callout-label">Key property</div>
+      SHAP values sum to the difference between the individual prediction and the baseline. For the high-risk borrower: baseline 0.211 + sum of SHAP values = 0.60. The math is exact and auditable.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3 -->
+  <div class="section" id="setup">
+    <div class="section-num">03 — Setup</div>
+    <h2>Setup and Imports</h2>
+    <div class="code-block">
+      <div class="code-header"><span>setup.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">import warnings
+warnings.filterwarnings('ignore')
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import shap
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+
+# Install if needed:
+# pip install shap scikit-learn pandas numpy matplotlib</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4 -->
+  <div class="section" id="model">
+    <div class="section-num">04 — Model</div>
+    <h2>Load Data and Train the Random Forest</h2>
+    <p>We use the same 25,000-loan LendingClub dataset and five features as the previous tutorials. The Random Forest is trained on 80% of the data and evaluated on the remaining 20%.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>train_model.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">DATA_PATH = "lendingclub_sample_25000.csv"
+
+df = pd.read_csv(DATA_PATH, low_memory=False)
+
+FEATURES = ['int_rate', 'dti', 'fico_range_high', 'annual_inc', 'loan_amnt']
+TARGET   = 'bad_loan'
+
+# Readable labels for plots
+FEATURE_LABELS = {
+    'int_rate':        'Interest Rate',
+    'dti':             'Debt-to-Income Ratio',
+    'fico_range_high': 'FICO Score',
+    'annual_inc':      'Annual Income',
+    'loan_amnt':       'Loan Amount'
+}
+
+df = df[FEATURES + [TARGET]].dropna()
+df[TARGET] = pd.to_numeric(df[TARGET], errors='coerce')
+df = df.dropna()
+
+X = df[FEATURES].rename(columns=FEATURE_LABELS)
+y = df[TARGET].astype(int)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+print(f"Dataset: {len(df):,} loans  |  Bad loan rate: {y.mean():.1%}")
+
+rf = RandomForestClassifier(n_estimators=500, random_state=42, n_jobs=-1)
+rf.fit(X_train, y_train)
+
+print(classification_report(y_test, rf.predict(X_test),
+      target_names=["Good loan", "Default"]))</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5 -->
+  <div class="section" id="compute">
+    <div class="section-num">05 — Compute</div>
+    <h2>Compute SHAP Values</h2>
+    <p>We use <code>shap.TreeExplainer</code>, which is optimised for tree-based models including Random Forest. Computing exact SHAP values for 500 trees across the full test set is slow, so we use a sample of 500 test borrowers and a background of 100 training borrowers.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>compute_shap.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">print("Computing SHAP values — this takes 1-2 minutes...")
+
+# Background sample for the explainer
+background = shap.maskers.Independent(X_train, max_samples=100)
+explainer  = shap.TreeExplainer(rf, background)
+
+# Sample 500 test borrowers for speed
+X_sample   = X_test.sample(500, random_state=42)
+shap_vals  = explainer(X_sample)
+
+# shap_vals[:, :, 1] = SHAP values for class 1 (default / bad loan)
+sv = shap_vals[:, :, 1]
+
+print("Done.")
+
+# Mean absolute SHAP by feature (global importance)
+importance = pd.Series(
+    np.abs(sv.values).mean(axis=0),
+    index=X_sample.columns
+).sort_values(ascending=False)
+
+print("\nFeature importance (mean |SHAP|):")
+print(importance.round(4))</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Output</span>
+Feature importance (mean |SHAP|):
+Interest Rate            0.0623
+FICO Score               0.0224
+Annual Income            0.0214
+Loan Amount              0.0198
+Debt-to-Income Ratio     0.0183</div>
+
+    <div class="callout info">
+      <div class="callout-label">Why class index 1?</div>
+      <code>shap_vals[:, :, 1]</code> selects SHAP values for the positive class (default = 1). Positive SHAP values push toward default; negative values push toward repayment.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 6 -->
+  <div class="section" id="summary">
+    <div class="section-num">06 — Figure 1</div>
+    <h2>Feature Importance Bar Chart</h2>
+    <p>The summary bar chart shows the mean absolute SHAP value for each feature, averaged across all 500 test borrowers. This answers the question: which features consistently drive the model's predictions, regardless of direction?</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>plot_summary_bar.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">plt.figure(figsize=(9, 5))
+shap.plots.bar(sv, show=False)
+plt.title("SHAP Feature Importance\n(mean absolute SHAP value)",
+          fontsize=12, fontweight='bold', pad=15)
+plt.tight_layout()
+plt.savefig("shap_summary_bar.png", dpi=200, bbox_inches='tight')
+plt.show()</code></pre>
+    </div>
+
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 1 — Feature Importance</div>
+      <img src="img/shap_summary_bar.png"
+           alt="SHAP feature importance bar chart showing interest rate dominating at 0.06, with FICO score, annual income, loan amount and DTI all at 0.02">
+      <p class="fig-caption"><strong>Reading this chart:</strong> Each bar shows the mean absolute SHAP value for that feature across all test borrowers. Longer bar means more influence on predictions. Interest Rate at 0.06 is nearly three times more influential than the other four features, which cluster tightly at 0.02. This is the global view — direction not included.</p>
+    </div>
+
+    <p>The finding is striking: Interest Rate dominates at 0.06, nearly three times more influential than FICO Score, Annual Income, Loan Amount, and Debt-to-Income Ratio, which each contribute around 0.02.</p>
+    <p>This makes intuitive sense. In a lending dataset, interest rate is not just a pricing variable. It is a summary statistic of risk. Lenders already price higher rates for borrowers they assess as riskier. The model has learned that the rate itself is the single most powerful signal of eventual default.</p>
+
+    <div class="callout tip">
+      <div class="callout-label">Practical implication</div>
+      If you are explaining your model to a non-technical audience or building a simplified scorecard, start with interest rate. It is doing most of the work.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 7 -->
+  <div class="section" id="beeswarm">
+    <div class="section-num">07 — Figure 2</div>
+    <h2>Beeswarm Plot: Direction and Magnitude</h2>
+    <p>The summary bar chart tells you how much each feature matters. It does not tell you how. The beeswarm plot answers the directional question: does a high FICO score increase or decrease default risk? Does a large loan amount push toward safety or danger?</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>plot_beeswarm.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">plt.figure(figsize=(9, 6))
+shap.plots.beeswarm(sv, show=False)
+plt.title("SHAP Beeswarm Plot\n(each dot = one borrower | color = feature value | x-axis = impact)",
+          fontsize=11, fontweight='bold', pad=15)
+plt.tight_layout()
+plt.savefig("shap_beeswarm.png", dpi=200, bbox_inches='tight')
+plt.show()</code></pre>
+    </div>
+
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 2 — Beeswarm Plot</div>
+      <img src="img/shap_beeswarm.png"
+           alt="SHAP beeswarm plot showing interest rate with the widest spread, FICO score inverted, and DTI nearly flat near zero">
+      <p class="fig-caption"><strong>How to read this:</strong> Each dot is one borrower. Position on the x-axis shows the SHAP value — right means pushed toward default, left means pushed toward safety. Color shows the feature value: red is high, blue is low. Features are sorted by importance (top = most important).</p>
+    </div>
+
+    <p>Reading each feature row:</p>
+
+    <p><strong>Interest Rate.</strong> The clearest signal. Red dots (high rates) cluster far to the right, pushing strongly toward default. Blue dots (low rates) cluster far to the left toward safety. The spread reaches +0.20 SHAP — interest rate alone can shift a prediction by 20 percentage points.</p>
+
+    <p><strong>FICO Score.</strong> The pattern is inverted, as expected. Blue dots (low FICO) push right toward default. Red dots (high FICO) push left toward safety. The effect is meaningful but smaller than interest rate.</p>
+
+    <p><strong>Annual Income.</strong> The cloud is dense and close to zero. Income matters but modestly. A few red dots (high income) appear on the right — an interesting finding suggesting very high incomes occasionally correlate with larger, riskier loan amounts rather than pure safety.</p>
+
+    <p><strong>Loan Amount.</strong> Similar to income: a tight cluster near zero. Larger loans show a slight tendency toward default but the effect is small and inconsistent.</p>
+
+    <p><strong>Debt-to-Income Ratio.</strong> Perhaps the most surprising finding. DTI, which traditional underwriters rely on heavily, shows almost no SHAP signal. The dots barely move from zero in either direction. After accounting for interest rate and FICO, DTI adds very little predictive power in this dataset.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 8 -->
+  <div class="section" id="waterfall">
+    <div class="section-num">08 — Figures 3 and 4</div>
+    <h2>Waterfall Plots: Individual Borrower Explanations</h2>
+    <p>The waterfall plot is where SHAP becomes operationally powerful. It breaks down a single prediction into its component parts — showing exactly how each feature pushed the final result away from the baseline. This is what you put in an adverse action notice.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>plot_waterfalls.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">probs = rf.predict_proba(X_sample)[:, 1]
+
+# Find the highest-risk and lowest-risk borrowers in the sample
+high_risk_idx = np.argmax(probs)
+low_risk_idx  = np.argmin(probs)
+
+# High-risk waterfall
+plt.figure(figsize=(9, 5))
+shap.plots.waterfall(sv[high_risk_idx], show=False)
+plt.title(f"SHAP Waterfall — High-Risk Borrower  (P(default) = {probs[high_risk_idx]:.1%})",
+          fontsize=11, fontweight='bold', pad=15)
+plt.tight_layout()
+plt.savefig("shap_waterfall_highrisk.png", dpi=200, bbox_inches='tight')
+plt.show()
+
+# Low-risk waterfall
+plt.figure(figsize=(9, 5))
+shap.plots.waterfall(sv[low_risk_idx], show=False)
+plt.title(f"SHAP Waterfall — Low-Risk Borrower  (P(default) = {probs[low_risk_idx]:.1%})",
+          fontsize=11, fontweight='bold', pad=15)
+plt.tight_layout()
+plt.savefig("shap_waterfall_lowrisk.png", dpi=200, bbox_inches='tight')
+plt.show()</code></pre>
+    </div>
+
+    <div class="waterfall-pair">
+      <div>
+        <div class="fig-label">Figure 3 — High-Risk Borrower (P = 60%)</div>
+        <img src="img/shap_waterfall_highrisk.png"
+             alt="SHAP waterfall for high-risk borrower showing all five features pushing toward default, interest rate contributing plus 0.15"
+             style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.10);">
+      </div>
+      <div>
+        <div class="fig-label">Figure 4 — Low-Risk Borrower (P = 0%)</div>
+        <img src="img/shap_waterfall_lowrisk.png"
+             alt="SHAP waterfall for low-risk borrower showing all five features pulling toward safety, interest rate contributing minus 0.13"
+             style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.10);">
+      </div>
+    </div>
+
+    <p class="fig-caption" style="margin-bottom:1.5rem;"><strong>How to read the waterfall:</strong> The x-axis starts at the baseline (E[f(X)] = 0.211, the portfolio average). Each bar shows how much that feature pushed the prediction right (toward default, red) or left (toward safety, blue). f(x) at the top is the final prediction.</p>
+
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem; margin: 2rem 0 1rem;">Interpreting the High-Risk Borrower</h2>
+
+    <p>This borrower has a 60% predicted probability of default. Every feature pushed in the same direction:</p>
+
+    <ul class="feature-list">
+      <li>
+        <span class="shap-val pos">+0.15</span>
+        <span class="feature-name">Interest Rate (19.05%)</span>
+        <span class="feature-detail">The single largest factor. A near-19% rate alone moves the baseline from 21% to 36%.</span>
+      </li>
+      <li>
+        <span class="shap-val pos">+0.08</span>
+        <span class="feature-name">FICO Score (664)</span>
+        <span class="feature-detail">Below average — signals prior credit stress.</span>
+      </li>
+      <li>
+        <span class="shap-val pos">+0.07</span>
+        <span class="feature-name">Loan Amount ($17,500)</span>
+        <span class="feature-detail">Relatively large for this borrower's profile.</span>
+      </li>
+      <li>
+        <span class="shap-val pos">+0.05</span>
+        <span class="feature-name">DTI (27.12)</span>
+        <span class="feature-detail">Elevated but not extreme.</span>
+      </li>
+      <li>
+        <span class="shap-val pos">+0.05</span>
+        <span class="feature-name">Annual Income ($45,000)</span>
+        <span class="feature-detail">Modest income compounds the loan amount concern.</span>
+      </li>
+    </ul>
+
+    <div class="callout warn">
+      <div class="callout-label">Key insight</div>
+      This is what a genuinely high-risk profile looks like: not one red flag, but five factors all pointing the same direction. The SHAP waterfall makes that accumulation visible and auditable.
+    </div>
+
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem; margin: 2rem 0 1rem;">Interpreting the Low-Risk Borrower</h2>
+
+    <p>Same baseline. Same model. Every feature pulled in the opposite direction:</p>
+
+    <ul class="feature-list">
+      <li>
+        <span class="shap-val neg">-0.13</span>
+        <span class="feature-name">Interest Rate (5.32%)</span>
+        <span class="feature-detail">A prime rate borrower. This single feature drops the probability from 21% to 8%.</span>
+      </li>
+      <li>
+        <span class="shap-val neg">-0.04</span>
+        <span class="feature-name">FICO Score (809)</span>
+        <span class="feature-detail">Excellent credit history.</span>
+      </li>
+      <li>
+        <span class="shap-val neg">-0.01</span>
+        <span class="feature-name">Loan Amount ($10,000)</span>
+        <span class="feature-detail">Modest, appropriate loan size.</span>
+      </li>
+      <li>
+        <span class="shap-val neg">-0.01</span>
+        <span class="feature-name">Annual Income ($55,000)</span>
+        <span class="feature-detail">Sufficient but not exceptional.</span>
+      </li>
+      <li>
+        <span class="shap-val neg">-0.01</span>
+        <span class="feature-name">DTI (21.84)</span>
+        <span class="feature-detail">Well-managed existing obligations.</span>
+      </li>
+    </ul>
+
+    <div class="callout tip">
+      <div class="callout-label">The contrast</div>
+      A 5.32% rate vs a 19.05% rate. FICO 809 vs 664. The model sees two fundamentally different borrowers — and SHAP shows exactly how different, feature by feature.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 9 -->
+  <div class="section" id="regulatory">
+    <div class="section-num">09 — Regulatory</div>
+    <h2>The Regulatory Angle</h2>
+    <p>SHAP is not just analytically useful. It is increasingly operationally necessary.</p>
+    <p>Under the Equal Credit Opportunity Act (ECOA) and Regulation B, lenders are required to provide adverse action notices to declined applicants. These notices must include specific reasons for the denial — not just "our model said no," but which factors drove the decision.</p>
+    <p>For the high-risk borrower above, the adverse action reasons write themselves directly from the waterfall plot, ranked by SHAP magnitude:</p>
+
+    <table class="aa-table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Adverse Action Reason</th>
+          <th>SHAP Value</th>
+          <th>Borrower Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="rank">1</td><td>Interest rate associated with credit profile</td><td>+0.15</td><td>19.05%</td></tr>
+        <tr><td class="rank">2</td><td>Credit score below threshold</td><td>+0.08</td><td>664</td></tr>
+        <tr><td class="rank">3</td><td>Loan amount relative to income</td><td>+0.07</td><td>$17,500</td></tr>
+        <tr><td class="rank">4</td><td>Debt-to-income ratio</td><td>+0.05</td><td>27.12</td></tr>
+        <tr><td class="rank">5</td><td>Annual income</td><td>+0.05</td><td>$45,000</td></tr>
+      </tbody>
+    </table>
+
+    <p>Each reason is ranked, quantified, and grounded in the actual model rather than a hand-coded rule. That is a legally defensible adverse action notice generated automatically from SHAP output.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 10 -->
+  <div class="section" id="limitations">
+    <div class="section-num">10 — Limitations</div>
+    <h2>Honest Limitations</h2>
+    <p>SHAP is powerful. It is not perfect.</p>
+
+    <p><strong>Correlated features.</strong> When two features are highly correlated — interest rate and FICO score often are, since lenders price risk into the rate — SHAP distributes the contribution across both. Neither SHAP value tells the complete story alone.</p>
+
+    <p><strong>Explanation is not causation.</strong> SHAP tells you which features drove the model's prediction, not which features caused the outcome. A borrower flagged for a 19% rate is risky because high-rate borrowers tend to default, not necessarily because the rate itself causes default.</p>
+
+    <p><strong>Computational cost.</strong> Exact SHAP values for large ensemble models require evaluating many feature combinations. For portfolios with many features and many borrowers, approximate methods may be necessary.</p>
+
+    <p><strong>The model still has to be right.</strong> SHAP explains what the model did. If the model is biased, SHAP will faithfully explain a biased prediction. Explainability and fairness are related but distinct problems.</p>
+
+    <div class="callout key">
+      <div class="callout-label">Coming next</div>
+      The next tutorial covers unsupervised anomaly detection for fraud and risk: finding suspicious borrowers without any labeled data, using Isolation Forest and Local Outlier Factor on the same LendingClub dataset.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- BROWSE LINK -->
+  <div style="text-align:center; padding: 2.5rem 0; border-top: 1px solid var(--lgray); margin-top: 1rem;">
+    <p style="font-size:0.95rem; color: var(--gray);">
+      Browse all tutorials at
+      <a href="https://james-mott.jimmott52.workers.dev/#tutorials"
+         style="color: var(--navy); font-weight:600; text-decoration:none; border-bottom: 1px solid var(--navy);">
+        james-mott.jimmott52.workers.dev/#tutorials
+      </a>
+    </p>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</footer>
+
+<script>
+  hljs.highlightAll();
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
