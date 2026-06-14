@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -388,9 +389,15 @@ plt.show()</code></pre>
       <p class="fig-caption"><strong>How to read this:</strong> Each dot is one borrower. Position on the x-axis shows the SHAP value — right means pushed toward default, left means pushed toward safety. Color shows the feature value: red is high, blue is low. Features are sorted by importance (top = most important).</p>
     </div>
 
+    <div class="callout key">
+      <div class="callout-label">What SHAP values mean in this context</div>
+      <p>In this Random Forest classifier, SHAP values are in <strong>probability units</strong>. A SHAP value of +0.15 for interest rate means that feature pushed that specific borrower's predicted default probability up by 15 percentage points above the 21.1% baseline. All five SHAP values sum exactly to the difference between the final prediction and the baseline — the math is precise, not approximate.</p>
+      <p style="margin-top:0.5rem;">This differs from SHAP in other contexts. In Shapley regression, values represent contributions to R². In a regression predicting a continuous outcome, they represent contributions to the predicted value. Here the contribution is to <strong>predicted probability of default</strong>. What stays constant across all contexts is the core principle: each SHAP value measures how much that feature moved the output away from the baseline, averaged fairly across all possible feature combinations.</p>
+    </div>
+
     <p>Reading each feature row:</p>
 
-    <p><strong>Interest Rate.</strong> The clearest signal. Red dots (high rates) cluster far to the right, pushing strongly toward default. Blue dots (low rates) cluster far to the left toward safety. The spread reaches +0.20 SHAP — interest rate alone can shift a prediction by 20 percentage points.</p>
+    <p><strong>Interest Rate.</strong> The clearest signal. Red dots (high rates) cluster far to the right, pushing strongly toward default. Blue dots (low rates) cluster far to the left toward safety. The spread reaches +0.20 SHAP at the extreme right — representing the single most rate-sensitive borrower in the sample, whose interest rate alone contributed +0.20 to their predicted default probability above the 21.1% baseline.</p>
 
     <p><strong>FICO Score.</strong> The pattern is inverted, as expected. Blue dots (low FICO) push right toward default. Red dots (high FICO) push left toward safety. The effect is meaningful but smaller than interest rate.</p>
 
@@ -413,9 +420,14 @@ plt.show()</code></pre>
       <div class="code-header"><span>plot_waterfalls.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <pre><code class="language-python">probs = rf.predict_proba(X_sample)[:, 1]
 
-# Find the highest-risk and lowest-risk borrowers in the sample
+# Find the highest-risk, medium-risk, and lowest-risk borrowers
 high_risk_idx = np.argmax(probs)
+mid_risk_idx  = np.argmin(np.abs(probs - 0.20))   # closest to 20% probability
 low_risk_idx  = np.argmin(probs)
+
+print(f"High-risk:   P(default) = {probs[high_risk_idx]:.1%}")
+print(f"Medium-risk: P(default) = {probs[mid_risk_idx]:.1%}")
+print(f"Low-risk:    P(default) = {probs[low_risk_idx]:.1%}")
 
 # High-risk waterfall
 plt.figure(figsize=(9, 5))
@@ -424,6 +436,15 @@ plt.title(f"SHAP Waterfall — High-Risk Borrower  (P(default) = {probs[high_ris
           fontsize=11, fontweight='bold', pad=15)
 plt.tight_layout()
 plt.savefig("shap_waterfall_highrisk.png", dpi=200, bbox_inches='tight')
+plt.show()
+
+# Medium-risk waterfall
+plt.figure(figsize=(9, 5))
+shap.plots.waterfall(sv[mid_risk_idx], show=False)
+plt.title(f"SHAP Waterfall — Medium-Risk Borrower  (P(default) = {probs[mid_risk_idx]:.1%})",
+          fontsize=11, fontweight='bold', pad=15)
+plt.tight_layout()
+plt.savefig("shap_waterfall_midrisk.png", dpi=200, bbox_inches='tight')
 plt.show()
 
 # Low-risk waterfall
@@ -449,6 +470,14 @@ plt.show()</code></pre>
              alt="SHAP waterfall for low-risk borrower showing all five features pulling toward safety, interest rate contributing minus 0.13"
              style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.10);">
       </div>
+    </div>
+
+    <div class="fig-wrap" style="margin-top:1.5rem;">
+      <div class="fig-label">Figure 5 — Medium-Risk Borrower (P ≈ 20%)</div>
+      <img src="img/shap_waterfall_midrisk.png"
+           alt="SHAP waterfall for medium-risk borrower showing mixed positive and negative SHAP values"
+           style="width:100%; border-radius:8px; box-shadow:0 4px 20px rgba(0,0,0,0.10);">
+      <p class="fig-caption"><strong>Note:</strong> This borrower was selected as the one closest to 20% predicted default probability — just below the portfolio baseline of 21.1%. Unlike the high and low-risk borrowers where every feature pointed the same direction, this borrower has features pushing in opposite directions. That mixed pattern is what makes borderline cases genuinely difficult — and where SHAP is most operationally useful.</p>
     </div>
 
     <p class="fig-caption" style="margin-bottom:1.5rem;"><strong>How to read the waterfall:</strong> The x-axis starts at the baseline (E[f(X)] = 0.211, the portfolio average). Each bar shows how much that feature pushed the prediction right (toward default, red) or left (toward safety, blue). f(x) at the top is the final prediction.</p>
@@ -525,6 +554,17 @@ plt.show()</code></pre>
     <div class="callout tip">
       <div class="callout-label">The contrast</div>
       A 5.32% rate vs a 19.05% rate. FICO 809 vs 664. The model sees two fundamentally different borrowers — and SHAP shows exactly how different, feature by feature.
+    </div>
+
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem; margin: 2rem 0 1rem;">Interpreting the Medium-Risk Borrower</h2>
+
+    <p>The medium-risk borrower is the most interesting and practically important case. Selected as the borrower closest to 20% predicted default probability — just below the 21.1% portfolio baseline — this borrower has features pushing in <strong>opposite directions</strong>. Some features increase risk while others mitigate it.</p>
+
+    <p>This is the borderline case that makes underwriting genuinely difficult. The high-risk and low-risk borrowers had all five features aligned. Here the model is weighing competing signals, and SHAP shows exactly what those signals are and how much each one matters.</p>
+
+    <div class="callout key">
+      <div class="callout-label">Why borderline cases matter most</div>
+      <p>For a borrower predicted at 60% default probability, the adverse action decision is straightforward. For a borrower at 20%, the decision is genuinely close — and the explanation matters more than ever. SHAP gives you the precise language: "Your FICO score and income are working in your favor, but your interest rate and loan amount are offsetting those positives." That is a real, useful explanation for a real, difficult decision.</p>
     </div>
   </div>
 
