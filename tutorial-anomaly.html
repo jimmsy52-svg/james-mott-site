@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anomaly Detection Tutorial — James C. Mott, Ph.D.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root {
+    --navy:   #0A1628;
+    --cream:  #F4F1EB;
+    --red:    #C0392B;
+    --gold:   #B8860B;
+    --gray:   #64748B;
+    --lgray:  #E8E4DC;
+    --white:  #FFFFFF;
+    --code-bg:#F8F6F2;
+    --green:  #2E7D32;
+    --green-light: #EAF5EA;
+    --teal:   #0E7490;
+    --teal-light: #F0FAFA;
+    --amber:  #D97706;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--navy); line-height: 1.7; }
+
+  nav { background: var(--navy); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { color: var(--white); font-family: 'Playfair Display', serif; font-size: 1.1rem; text-decoration: none; }
+  .nav-back { color: #A8B8C8; text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-back:hover { color: var(--white); }
+
+  .hero { background: var(--navy); color: var(--white); padding: 5rem 2rem 4rem; text-align: center; }
+  .hero-tag { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; margin-bottom: 1.25rem; }
+  .hero h1 em { font-style: italic; color: #7DD3E8; }
+  .hero-sub { font-size: 1.05rem; color: #A8B8C8; max-width: 680px; margin: 0 auto 2rem; font-weight: 300; }
+  .hero-meta { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.82rem; color: #7A8FA0; letter-spacing: 0.05em; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+
+  .toc { background: var(--white); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0; padding: 1.5rem 2rem; margin: 3rem 0 2rem; }
+  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.75rem; }
+  .toc ol { padding-left: 1.2rem; }
+  .toc li { margin: 0.3rem 0; }
+  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+  .toc a:hover { color: var(--teal); }
+
+  .section { padding: 3rem 0 1rem; }
+  .section-num { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .section h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 1.25rem; line-height: 1.3; }
+  .section h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin: 1.75rem 0 0.75rem; color: var(--teal); }
+  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
+
+  .code-block { margin: 1.5rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .code-header { background: var(--navy); color: #7A9BB5; font-family: 'Source Code Pro', monospace; font-size: 0.75rem; padding: 0.6rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+  .copy-btn { background: transparent; border: 1px solid #3A5A7A; color: #7A9BB5; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-family: 'Source Code Pro', monospace; transition: all 0.2s; }
+  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
+  .code-block pre { margin: 0 !important; border-radius: 0 !important; background: var(--code-bg) !important; padding: 1.5rem !important; font-size: 0.87rem !important; line-height: 1.6 !important; overflow-x: auto; }
+  .code-block code { font-family: 'Source Code Pro', monospace !important; }
+
+  .callout { border-left: 3px solid var(--navy); background: var(--white); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; margin: 1.5rem 0; font-size: 0.92rem; }
+  .callout.tip    { border-color: var(--green);  background: var(--green-light); }
+  .callout.warn   { border-color: var(--red);    background: #FDF0F0; }
+  .callout.info   { border-color: var(--gold);   background: #FEFBF0; }
+  .callout.key    { border-color: var(--teal);   background: var(--teal-light); }
+  .callout-label  { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .callout.tip  .callout-label { color: var(--green); }
+  .callout.warn .callout-label { color: var(--red); }
+  .callout.info .callout-label { color: var(--gold); }
+  .callout.key  .callout-label { color: var(--teal); }
+
+  .output-block { background: #F0F4F0; border: 1px solid #C8D8C8; border-radius: 6px; padding: 1.25rem 1.5rem; font-family: 'Source Code Pro', monospace; font-size: 0.82rem; line-height: 1.8; margin: 1.5rem 0; overflow-x: auto; white-space: pre; }
+  .output-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 0.5rem; }
+
+  .fig-wrap { margin: 2rem 0; }
+  .fig-wrap img { width: 100%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.10); }
+  .fig-caption { font-size: 0.83rem; color: var(--gray); line-height: 1.6; margin-top: 0.65rem; font-style: italic; padding: 0 0.25rem; }
+  .fig-caption strong { color: var(--navy); font-style: normal; }
+  .fig-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.4rem; }
+
+  /* Method cards */
+  .method-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .method-card { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1.25rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .method-card h4 { font-size: 0.95rem; font-weight: 700; color: var(--navy); margin-bottom: 0.4rem; }
+  .method-card p { font-size: 0.87rem; color: var(--gray); margin: 0; line-height: 1.5; }
+  .method-num { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.3rem; }
+
+  /* Tier table */
+  .tier-table { width: 100%; border-collapse: collapse; margin: 1.25rem 0; font-size: 0.88rem; }
+  .tier-table th { background: var(--navy); color: var(--white); padding: 0.65rem 1rem; text-align: left; font-weight: 500; font-size: 0.82rem; }
+  .tier-table td { padding: 0.65rem 1rem; border-bottom: 1px solid var(--lgray); }
+  .tier-table tr:last-child td { border-bottom: none; }
+  .tier-extreme { background: #FCCFCF; font-weight: 700; color: #8B0000; }
+  .tier-high    { background: #FDE8D0; font-weight: 700; color: #7A3A00; }
+  .tier-mod     { background: #FFF8DC; font-weight: 700; color: #5A4A00; }
+  .tier-border  { background: #F4F1EB; font-weight: 600; color: var(--navy); }
+
+  /* Agreement result boxes */
+  .agreement-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .agreement-box { background: var(--white); border-radius: 8px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+  .agreement-box .val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.25rem; }
+  .agreement-box .lbl { font-size: 0.78rem; color: var(--gray); line-height: 1.4; }
+  .val-red   { color: var(--red); }
+  .val-green { color: var(--green); }
+  .val-gray  { color: var(--gray); }
+  .val-teal  { color: var(--teal); }
+
+  /* Three-category boxes */
+  .category-list { display: grid; grid-template-columns: 1fr; gap: 0.75rem; margin: 1.25rem 0; }
+  .category-box { border-radius: 6px; padding: 1rem 1.25rem; }
+  .category-box.risky  { background: #FDF0F0; border-left: 4px solid var(--red); }
+  .category-box.benign { background: var(--green-light); border-left: 4px solid var(--green); }
+  .category-box.data   { background: #FEFBF0; border-left: 4px solid var(--amber); }
+  .category-box h4 { font-size: 0.88rem; font-weight: 700; margin-bottom: 0.25rem; }
+  .category-box.risky  h4 { color: var(--red); }
+  .category-box.benign h4 { color: var(--green); }
+  .category-box.data   h4 { color: var(--amber); }
+  .category-box p { font-size: 0.88rem; margin: 0; color: #2A3A4A; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .stat-box { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .stat-val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
+  .stat-lbl { font-size: 0.78rem; color: var(--gray); line-height: 1.4; }
+
+  .divider { border: none; border-top: 1px solid var(--lgray); margin: 2.5rem 0; }
+
+  footer { background: var(--navy); color: #7A8FA0; text-align: center; padding: 2.5rem 1rem; margin-top: 5rem; font-size: 0.85rem; }
+  footer a { color: #A8C4E0; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
+  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Tutorial · Python · Fraud Detection · Unsupervised ML</div>
+  <h1>Finding Risky Borrowers<br><em>Without a Target Variable</em></h1>
+  <p class="hero-sub">Three unsupervised anomaly detection methods applied to 24,977 LendingClub loans — with no knowledge of who actually defaulted. Includes ranking, tiering, and a critical distinction most tutorials miss.</p>
+  <div class="hero-meta">
+    <span>🐍 Python Script</span>
+    <span>📊 scikit-learn · pandas · openpyxl</span>
+    <span>📅 2026</span>
+    <span>⏱ ~30 min</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#problem">The Problem With Waiting for Labels</a></li>
+      <li><a href="#setup">Setup and Imports</a></li>
+      <li><a href="#data">Load and Prepare Data</a></li>
+      <li><a href="#isoforest">Method 1: Isolation Forest</a></li>
+      <li><a href="#lof">Method 2: Local Outlier Factor</a></li>
+      <li><a href="#ocsvm">Method 3: One-Class SVM</a></li>
+      <li><a href="#agreement">Agreement Analysis</a></li>
+      <li><a href="#ranking">Ranking and Tiering by Severity</a></li>
+      <li><a href="#top20">Inspecting the Top 20</a></li>
+      <li><a href="#distinction">The Critical Distinction</a></li>
+      <li><a href="#plots">Visualizations</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="problem">
+    <div class="section-num">01 — The Problem</div>
+    <h2>The Problem With Waiting for Labels</h2>
+    <p>In a mature fraud program, you have years of confirmed cases. You know what fraud looks like. You can train a supervised model, tune it, validate it, and deploy it with confidence.</p>
+    <p>But every fraud program started somewhere. Every new risk type begins without labels. And even in mature programs, novel fraud patterns look nothing like your training data.</p>
+    <p>Supervised models are excellent at finding more of what they have already seen. They are blind to what they have never encountered.</p>
+    <p>Unsupervised anomaly detection asks a different question. Not "does this borrower look like past fraudsters?" but "does this borrower look like everyone else?" A borrower who does not fit the pattern is worth a second look — regardless of whether anyone has ever labeled them risky before.</p>
+
+    <div class="method-cards">
+      <div class="method-card">
+        <div class="method-num">Method 1</div>
+        <h4>Isolation Forest</h4>
+        <p>Finds borrowers that are easy to isolate globally — unusual across the entire portfolio.</p>
+      </div>
+      <div class="method-card">
+        <div class="method-num">Method 2</div>
+        <h4>Local Outlier Factor</h4>
+        <p>Finds borrowers unusual relative to their local neighbors — catches anomalies hidden within subgroups.</p>
+      </div>
+      <div class="method-card">
+        <div class="method-num">Method 3</div>
+        <h4>One-Class SVM</h4>
+        <p>Learns a boundary around normal borrowers and flags anything outside it.</p>
+      </div>
+    </div>
+
+    <div class="callout key">
+      <div class="callout-label">About the target variable</div>
+      The LendingClub dataset includes a <code>bad_loan</code> variable — a pre-existing indicator from LendingClub's own servicing records showing whether a loan ultimately defaulted or was charged off. This variable was set completely aside before any modeling. The models had no knowledge of who defaulted. We only looked at <code>bad_loan</code> after the models ran, as a retrospective check to understand what they had found. In a real deployment on a new portfolio or new fraud pattern, you would not have this luxury.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 2 -->
+  <div class="section" id="setup">
+    <div class="section-num">02 — Setup</div>
+    <h2>Setup and Imports</h2>
+    <div class="code-block">
+      <div class="code-header"><span>setup.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">import warnings
+warnings.filterwarnings('ignore')
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.ensemble import IsolationForest
+from sklearn.neighbors import LocalOutlierFactor
+from sklearn.svm import OneClassSVM
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import PCA
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+from openpyxl.utils import get_column_letter
+
+# Install if needed:
+# pip install scikit-learn pandas numpy matplotlib openpyxl</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3 -->
+  <div class="section" id="data">
+    <div class="section-num">03 — Data</div>
+    <h2>Load and Prepare Data</h2>
+    <p>We use five borrower features from the 25,000-loan LendingClub sample. Feature scaling is critical for LOF and One-Class SVM — both are distance-based methods that are sensitive to the scale of each variable.</p>
+    <div class="code-block">
+      <div class="code-header"><span>load_data.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">DATA_PATH  = "lendingclub_sample_25000.csv"
+OUTPUT_DIR = "."
+
+df = pd.read_csv(DATA_PATH, low_memory=False)
+
+FEATURES = ['int_rate', 'dti', 'fico_range_high', 'annual_inc', 'loan_amnt']
+TARGET   = 'bad_loan'
+
+df = df[FEATURES + [TARGET]].dropna()
+df[TARGET] = pd.to_numeric(df[TARGET], errors='coerce')
+df = df.dropna()
+df[TARGET] = df[TARGET].astype(int)
+
+print(f"Dataset: {len(df):,} loans")
+print(f"Bad loan rate (set aside): {df[TARGET].mean():.1%}")
+
+# Features only — no target
+X = df[FEATURES].copy()
+
+# Scale features — essential for LOF and One-Class SVM
+scaler   = StandardScaler()
+X_scaled = scaler.fit_transform(X)</code></pre>
+    </div>
+    <div class="callout tip">
+      <div class="callout-label">Why scaling matters</div>
+      Annual income ranges from $4,800 to $5,000,000. Interest rate ranges from 5% to 31%. Without scaling, income would dominate every distance calculation. StandardScaler centers each feature at zero with unit variance so all five features contribute equally.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4 -->
+  <div class="section" id="isoforest">
+    <div class="section-num">04 — Method 1</div>
+    <h2>Isolation Forest</h2>
+    <p>Isolation Forest builds random decision trees and measures how quickly each borrower can be isolated from the rest. Normal borrowers — who resemble many others — require many splits to isolate. Anomalous borrowers can be separated in just a few splits.</p>
+    <p>Think of it as asking: how easy is it to single this borrower out from the crowd? The easier it is, the more anomalous they are.</p>
+    <div class="code-block">
+      <div class="code-header"><span>isolation_forest.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">iso = IsolationForest(
+    n_estimators=300,
+    contamination=0.05,   # flag top 5% as anomalies
+    random_state=42,
+    n_jobs=-1
+)
+iso.fit(X_scaled)
+
+df['iso_score'] = iso.score_samples(X_scaled)  # lower = more anomalous
+df['iso_flag']  = (iso.predict(X_scaled) == -1).astype(int)
+
+n_iso = df['iso_flag'].sum()
+print(f"Borrowers flagged:          {n_iso:,} ({n_iso/len(df):.1%})")
+print(f"Bad loan rate — flagged:    {df[df['iso_flag']==1][TARGET].mean():.1%}")
+print(f"Bad loan rate — not flagged:{df[df['iso_flag']==0][TARGET].mean():.1%}")
+print(f"\nProfile of flagged borrowers (mean values):")
+print(df[df['iso_flag']==1][FEATURES].mean().round(2))</code></pre>
+    </div>
+    <div class="output-block"><span class="output-label">Output</span>
+Borrowers flagged:          1,249 (5.0%)
+Bad loan rate — flagged:    12.1%
+Bad loan rate — not flagged:13.1%
+
+Profile of flagged borrowers (mean values):
+int_rate               14.52
+dti                    25.95
+fico_range_high       734.46
+annual_inc         175,294.59
+loan_amnt           26,533.37</div>
+    <div class="callout info">
+      <div class="callout-label">Key finding</div>
+      Flagged borrowers have significantly higher average income ($175,294) and larger loan amounts ($26,533). These are not the poorest or most credit-damaged borrowers. They are the most unusual ones — borrowers whose combination of features does not fit the typical portfolio pattern.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5 -->
+  <div class="section" id="lof">
+    <div class="section-num">05 — Method 2</div>
+    <h2>Local Outlier Factor</h2>
+    <p>LOF asks whether a borrower is unusual relative to their neighbors, not globally. A borrower is flagged if their local neighborhood is much denser than they are — meaning everyone around them is tightly clustered, but they stand apart.</p>
+    <p>A 22% interest rate in a subprime segment might be normal. That same rate in a prime borrower cluster is a red flag. LOF catches the second type — anomalies that hide within subgroups.</p>
+    <div class="code-block">
+      <div class="code-header"><span>local_outlier_factor.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">lof = LocalOutlierFactor(
+    n_neighbors=20,
+    contamination=0.05,
+    novelty=False,
+    n_jobs=-1
+)
+lof_preds = lof.fit_predict(X_scaled)
+
+df['lof_score'] = lof.negative_outlier_factor_  # lower = more anomalous
+df['lof_flag']  = (lof_preds == -1).astype(int)
+
+n_lof = df['lof_flag'].sum()
+print(f"Borrowers flagged:          {n_lof:,} ({n_lof/len(df):.1%})")
+print(f"Bad loan rate — flagged:    {df[df['lof_flag']==1][TARGET].mean():.1%}")
+print(f"Bad loan rate — not flagged:{df[df['lof_flag']==0][TARGET].mean():.1%}")
+print(f"\nProfile of flagged borrowers (mean values):")
+print(df[df['lof_flag']==1][FEATURES].mean().round(2))</code></pre>
+    </div>
+    <div class="output-block"><span class="output-label">Output</span>
+Borrowers flagged:          1,249 (5.0%)
+Bad loan rate — flagged:    12.1%
+Bad loan rate — not flagged:13.1%
+
+Profile of flagged borrowers (mean values):
+int_rate               14.80
+dti                    29.65
+fico_range_high       715.13
+annual_inc         115,113.27
+loan_amnt           17,810.13</div>
+    <div class="callout key">
+      <div class="callout-label">Same count, different borrowers</div>
+      LOF flagged exactly 1,249 borrowers — the same count as Isolation Forest — but with a meaningfully different profile. Higher DTI (29.65 vs 25.95), lower income ($115,113 vs $175,294). The two methods are catching different populations. This is why running both matters.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 6 -->
+  <div class="section" id="ocsvm">
+    <div class="section-num">06 — Method 3</div>
+    <h2>One-Class SVM</h2>
+    <p>One-Class SVM learns a boundary around the core of the normal population. Anything outside that boundary is flagged as an anomaly. It is particularly good at capturing the shape of the normal distribution rather than just individual extreme values.</p>
+    <p>One-Class SVM is computationally intensive — on 25,000 borrowers it can be very slow. We run it on a 5,000-borrower sample.</p>
+    <div class="code-block">
+      <div class="code-header"><span>one_class_svm.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python"># Sample for speed — One-Class SVM is slow on large datasets
+sample_idx = np.random.RandomState(42).choice(len(X_scaled), 5000, replace=False)
+X_sample   = X_scaled[sample_idx]
+df_sample  = df.iloc[sample_idx].copy()
+
+ocsvm = OneClassSVM(kernel='rbf', nu=0.05, gamma='scale')
+ocsvm.fit(X_sample)
+
+df_sample['ocsvm_score'] = ocsvm.score_samples(X_sample)
+df_sample['ocsvm_flag']  = (ocsvm.predict(X_sample) == -1).astype(int)
+
+n_ocsvm = df_sample['ocsvm_flag'].sum()
+print(f"Borrowers flagged (5k sample): {n_ocsvm:,} ({n_ocsvm/len(df_sample):.1%})")
+print(f"Bad loan rate — flagged:    {df_sample[df_sample['ocsvm_flag']==1][TARGET].mean():.1%}")
+print(f"Bad loan rate — not flagged:{df_sample[df_sample['ocsvm_flag']==0][TARGET].mean():.1%}")</code></pre>
+    </div>
+    <div class="output-block"><span class="output-label">Output</span>
+Borrowers flagged (5k sample): 253 (5.1%)
+Bad loan rate — flagged:    15.0%
+Bad loan rate — not flagged:12.5%</div>
+    <div class="callout tip">
+      <div class="callout-label">Strongest signal</div>
+      One-Class SVM produced the strongest result of the three methods — a 15.0% bad loan rate in the flagged group, the only method that meaningfully exceeded the portfolio average of 13.0%.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 7 -->
+  <div class="section" id="agreement">
+    <div class="section-num">07 — Agreement</div>
+    <h2>Agreement Analysis</h2>
+    <p>Running multiple methods raises an important question: which flagged borrowers should you actually act on? The answer is clear when you look at agreement across methods.</p>
+    <div class="code-block">
+      <div class="code-header"><span>agreement.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">df['n_flags'] = df['iso_flag'] + df['lof_flag']
+
+agree_both = df[df['n_flags'] == 2]
+agree_one  = df[df['n_flags'] == 1]
+agree_none = df[df['n_flags'] == 0]
+
+print(f"Flagged by BOTH:    {len(agree_both):,} ({len(agree_both)/len(df):.1%}) "
+      f"— bad loan rate: {agree_both[TARGET].mean():.1%}")
+print(f"Flagged by ONE:     {len(agree_one):,}  ({len(agree_one)/len(df):.1%}) "
+      f"— bad loan rate: {agree_one[TARGET].mean():.1%}")
+print(f"Flagged by NEITHER: {len(agree_none):,} ({len(agree_none)/len(df):.1%}) "
+      f"— bad loan rate: {agree_none[TARGET].mean():.1%}")</code></pre>
+    </div>
+
+    <div class="agreement-grid">
+      <div class="agreement-box" style="border-top: 3px solid var(--red);">
+        <div class="val val-red">14.3%</div>
+        <div class="lbl">Bad loan rate<br>Flagged by BOTH (453 borrowers)</div>
+      </div>
+      <div class="agreement-box" style="border-top: 3px solid var(--amber);">
+        <div class="val" style="color:var(--amber);">10.8%</div>
+        <div class="lbl">Bad loan rate<br>Flagged by ONE only (1,592 borrowers)</div>
+      </div>
+      <div class="agreement-box" style="border-top: 3px solid var(--gray);">
+        <div class="val val-gray">13.2%</div>
+        <div class="lbl">Bad loan rate<br>Flagged by NEITHER (22,932 borrowers)</div>
+      </div>
+      <div class="agreement-box" style="border-top: 3px solid var(--teal);">
+        <div class="val val-teal">13.0%</div>
+        <div class="lbl">Portfolio average<br>All 24,977 borrowers</div>
+      </div>
+    </div>
+
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 1 — Bad Loan Rate by Agreement Group</div>
+      <img src="img/anomaly_agreement_chart.png" alt="Bar chart showing bad loan rates by agreement group — both flagged 14.3%, one only 10.8%, neither 13.2%">
+      <p class="fig-caption"><strong>Key insight:</strong> Borrowers flagged by only one method have a bad loan rate below the portfolio average. Those flagged by both methods exceed it. When two independent methods using fundamentally different logic both flag the same borrower, that convergence is a signal worth investigating.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 8 -->
+  <div class="section" id="ranking">
+    <div class="section-num">08 — Ranking</div>
+    <h2>Ranking and Tiering by Severity</h2>
+    <p>Binary flags — flagged or not — miss an important dimension. Not all anomalies are equally anomalous. Each method produces a continuous score. We convert those scores to percentile ranks and average across methods to produce a composite anomaly score for every borrower.</p>
+    <div class="code-block">
+      <div class="code-header"><span>ranking.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">n = len(df)
+
+# Rank each method — rank 1 = most anomalous
+df['iso_rank'] = df['iso_score'].rank(ascending=True)
+df['lof_rank'] = df['lof_score'].rank(ascending=True)
+
+# Convert to percentile (0 = most anomalous)
+df['iso_pct'] = (df['iso_rank'] / n * 100).round(2)
+df['lof_pct'] = (df['lof_rank'] / n * 100).round(2)
+
+# Composite: average percentile across both methods
+df['composite_pct']  = ((df['iso_pct'] + df['lof_pct']) / 2).round(2)
+df['composite_rank'] = df['composite_pct'].rank(ascending=True).astype(int)
+
+# Assign anomaly tiers
+def assign_tier(pct):
+    if pct <= 1.0:   return 'Extreme (top 1%)'
+    elif pct <= 2.0: return 'High (top 2%)'
+    elif pct <= 5.0: return 'Moderate (top 5%)'
+    elif pct <= 10.0:return 'Borderline (top 10%)'
+    else:            return 'Normal'
+
+df['anomaly_tier'] = df['composite_pct'].apply(assign_tier)</code></pre>
+    </div>
+
+    <table class="tier-table">
+      <thead>
+        <tr><th>Tier</th><th>Approx. Count</th><th>Description</th><th>Recommended Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="tier-extreme">Extreme (top 1%)</td><td>~250</td><td>Furthest from portfolio center, flagged by both methods</td><td>Immediate manual review</td></tr>
+        <tr><td class="tier-high">High (top 2%)</td><td>~250</td><td>Clearly anomalous, strong signal</td><td>Priority review queue</td></tr>
+        <tr><td class="tier-mod">Moderate (top 5%)</td><td>~750</td><td>Meaningfully unusual, may include benign outliers</td><td>Enhanced monitoring</td></tr>
+        <tr><td class="tier-border">Borderline (top 10%)</td><td>~1,250</td><td>Somewhat unusual, lower priority</td><td>Watch list</td></tr>
+        <tr><td>Normal</td><td>~22,500</td><td>Fits typical portfolio pattern</td><td>Standard processing</td></tr>
+      </tbody>
+    </table>
+
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 5 — Anomaly Score Rank Distribution</div>
+      <img src="img/anomaly_rank_distribution.png" alt="Line charts showing anomaly scores sorted by rank — a cliff is visible where extreme anomalies separate from the rest">
+      <p class="fig-caption"><strong>Reading this chart:</strong> The x-axis goes from most anomalous (left) to most normal (right). The cliff near the right side is where extreme anomalies separate from the pack. For LOF (right panel) the cliff is dramatic — some borrowers score below -12, while the vast majority cluster near -1. A borrower on the steep part of the cliff is categorically more anomalous than one on the flat part, even if they are only a few ranks apart.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 9 -->
+  <div class="section" id="top20">
+    <div class="section-num">09 — Top 20</div>
+    <h2>Inspecting the Top 20</h2>
+    <p>The script exports a formatted Excel file showing the 20 most anomalous borrowers by composite rank — color coded by tier and outcome.</p>
+    <div class="code-block">
+      <div class="code-header"><span>top20_export.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python"># Export ranked CSV — all borrowers
+output_cols = ['composite_rank', 'anomaly_tier', 'composite_pct',
+               'iso_score', 'iso_rank', 'lof_score', 'lof_rank',
+               'int_rate', 'dti', 'fico_range_high',
+               'annual_inc', 'loan_amnt', TARGET]
+df[output_cols].sort_values('composite_rank').to_csv(
+    f"{OUTPUT_DIR}/anomaly_ranked_borrowers.csv", index=False)
+
+# Export formatted Top 20 Excel
+# (see full script for complete openpyxl formatting code)
+top20 = df.nsmallest(20, 'composite_pct')
+
+# Color coding:
+#   Extreme tier cells   — red background
+#   Bad Loan = YES rows  — light red background
+#   Alternating rows     — cream / white</code></pre>
+    </div>
+
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 6 — Top 20 Most Anomalous Borrowers</div>
+      <img src="img/Top20.png" alt="Color-coded Excel table showing the 20 most anomalous borrowers with red rows for bad loan outcomes">
+      <p class="fig-caption"><strong>Reading this table:</strong> Every row is an Extreme tier borrower (top 1%). Red rows indicate bad_loan = YES. Only 4 of the top 20 actually defaulted — illustrating that anomalous does not mean risky. The diversity of profiles in this table is the key teaching point.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 10 -->
+  <div class="section" id="distinction">
+    <div class="section-num">10 — Critical Distinction</div>
+    <h2>The Critical Distinction: Unusual Is Not the Same as Risky</h2>
+    <p>This is the most important conceptual point in the entire tutorial.</p>
+    <p>A supervised model is trained on labeled outcomes. It learns what defaulters look like. When it flags a borrower, it is saying: "this borrower resembles past defaulters."</p>
+    <p>An unsupervised model has never seen a label. It only knows what a typical borrower looks like. When it flags someone, it is saying something entirely different: "this borrower does not look like most borrowers."</p>
+    <p><strong>Those are fundamentally different statements.</strong></p>
+    <p>Look at the top two cases in the table above:</p>
+
+    <div class="category-list">
+      <div class="category-box benign">
+        <h4>Rank 1 — Benign outlier</h4>
+        <p>Income $3,000,000 · DTI 2.39 · Rate 7.21% · FICO 749 · Bad loan: no. An ultra-wealthy borrower taking a modest loan at a prime rate. Statistically unusual, not risky.</p>
+      </div>
+      <div class="category-box data">
+        <h4>Rank 1 — Data quality issue</h4>
+        <p>Income $1,800 · DTI 999 · Rate 30.84% · FICO 729 · Bad loan: no. A DTI of 999 is not a real ratio. This record needs data investigation before any credit decision.</p>
+      </div>
+      <div class="category-box risky">
+        <h4>Rank 9 — Genuinely risky</h4>
+        <p>Income $14,208 · DTI 65.12 · Rate 30.89% · FICO 664 · Bad loan: YES. Every feature signals distress. The model was right to flag this one.</p>
+      </div>
+    </div>
+
+    <p>Every flagged borrower falls into one of these three categories:</p>
+    <p><strong>Genuinely risky</strong> — the profile reflects real credit risk. Extreme DTI, very low income relative to loan amount, a rate that signals the lender already priced in significant risk.</p>
+    <p><strong>Benign outlier</strong> — statistically unusual but not actually risky. Very high income, exceptionally low debt, a prime rate borrower in a subprime-heavy portfolio. Flagged because they stand out, not because they are dangerous.</p>
+    <p><strong>Data quality issue</strong> — anomalous because something is wrong with the data. These cases need investigation before any credit decision — the issue is in the data pipeline, not the borrower.</p>
+
+    <div class="callout warn">
+      <div class="callout-label">The implication</div>
+      The human reviewer's job is to determine which category each flagged borrower falls into. The model tells you where to look. The analyst determines what it means. This is why unsupervised anomaly detection is also a powerful <strong>data quality tool</strong> — it finds problems in your origination system and data feeds that nobody was looking for.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 11 -->
+  <div class="section" id="plots">
+    <div class="section-num">11 — Visualizations</div>
+    <h2>Visualizations</h2>
+
+    <h3>Score Distributions</h3>
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 2 — Anomaly Score Distributions</div>
+      <img src="img/anomaly_score_distributions.png" alt="Side-by-side histograms showing how Isolation Forest and LOF score normal vs flagged borrowers">
+      <p class="fig-caption"><strong>Reading this chart:</strong> Blue = normal borrowers, red = flagged. Isolation Forest (left) shows a smooth distribution — flagged borrowers form a continuous tail. LOF (right) shows a more extreme separation, with some borrowers scoring far below the normal cluster.</p>
+    </div>
+
+    <h3>Feature Profiles</h3>
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 3 — Feature Profiles: Normal vs. Flagged</div>
+      <img src="img/anomaly_feature_profiles.png" alt="Box plots comparing five feature distributions for normal vs flagged borrowers">
+      <p class="fig-caption"><strong>Reading this chart:</strong> Each panel shows a feature's distribution for normal (left) vs flagged (right) borrowers. Flagged borrowers show dramatically wider spread on DTI and Annual Income — one borrower reaches a DTI near 1,000 and another an income near $5 million. The methods are partly detecting data quality extremes, not just credit risk.</p>
+    </div>
+
+    <h3>PCA Projection</h3>
+    <div class="fig-wrap">
+      <div class="fig-label">Figure 4 — PCA Projection</div>
+      <img src="img/anomaly_pca_scatter.png" alt="Scatter plot showing normal borrowers in a dense cluster and flagged borrowers scattered at the periphery in multiple directions">
+      <p class="fig-caption"><strong>Reading this chart:</strong> Normal borrowers (blue) form a dense cluster near the origin. Flagged borrowers (red) scatter in multiple directions — some pushed far right, some far left, some pushed high. There is no single type of anomaly. Anomalies come in many shapes.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- BROWSE LINK -->
+  <div style="text-align:center; padding: 2.5rem 0; border-top: 1px solid var(--lgray); margin-top: 1rem;">
+    <p style="font-size:0.95rem; color: var(--gray);">
+      Browse all tutorials at
+      <a href="https://james-mott.jimmott52.workers.dev/#tutorials"
+         style="color: var(--navy); font-weight:600; text-decoration:none; border-bottom: 1px solid var(--navy);">
+        james-mott.jimmott52.workers.dev/#tutorials
+      </a>
+    </p>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</footer>
+
+<script>
+  hljs.highlightAll();
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
