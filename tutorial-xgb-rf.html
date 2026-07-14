@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XGBoost vs. Random Forest Tutorial — James C. Mott, Ph.D.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root {
+    --navy:   #0A1628;
+    --cream:  #F4F1EB;
+    --red:    #C0392B;
+    --gold:   #B8860B;
+    --gray:   #64748B;
+    --lgray:  #E8E4DC;
+    --white:  #FFFFFF;
+    --code-bg:#F8F6F2;
+    --green:  #2E7D32;
+    --green-light: #EAF5EA;
+    --amber:  #D97706;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--navy); line-height: 1.7; }
+
+  nav { background: var(--navy); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { color: var(--white); font-family: 'Playfair Display', serif; font-size: 1.1rem; text-decoration: none; }
+  .nav-back { color: #A8B8C8; text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-back:hover { color: var(--white); }
+
+  .hero { background: var(--navy); color: var(--white); padding: 5rem 2rem 4rem; text-align: center; }
+  .hero-tag { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; margin-bottom: 1.25rem; }
+  .hero h1 em { font-style: italic; color: #E87878; }
+  .hero-sub { font-size: 1.05rem; color: #A8B8C8; max-width: 660px; margin: 0 auto 2rem; font-weight: 300; }
+  .hero-meta { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.82rem; color: #7A8FA0; letter-spacing: 0.05em; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+
+  .toc { background: var(--white); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 1.5rem 2rem; margin: 3rem 0 2rem; }
+  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.75rem; }
+  .toc ol { padding-left: 1.2rem; }
+  .toc li { margin: 0.3rem 0; }
+  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+  .toc a:hover { color: var(--red); }
+
+  .section { padding: 3rem 0 1rem; }
+  .section-num { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .section h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 1.25rem; line-height: 1.3; }
+  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
+  .section strong { color: var(--navy); }
+
+  .code-block { margin: 1.5rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .code-header { background: var(--navy); color: #7A9BB5; font-family: 'Source Code Pro', monospace; font-size: 0.75rem; padding: 0.6rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+  .copy-btn { background: transparent; border: 1px solid #3A5A7A; color: #7A9BB5; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-family: 'Source Code Pro', monospace; transition: all 0.2s; }
+  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
+  .code-block pre { margin: 0 !important; border-radius: 0 !important; background: var(--code-bg) !important; padding: 1.5rem !important; font-size: 0.87rem !important; line-height: 1.6 !important; overflow-x: auto; }
+  .code-block code { font-family: 'Source Code Pro', monospace !important; }
+
+  .callout { border-left: 3px solid var(--navy); background: var(--white); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; margin: 1.5rem 0; font-size: 0.92rem; }
+  .callout.tip  { border-color: var(--green); background: var(--green-light); }
+  .callout.warn { border-color: var(--red);   background: #FDF0F0; }
+  .callout.info { border-color: var(--gold);  background: #FEFBF0; }
+  .callout.key  { border-color: #6A0DAD;      background: #F5F0FF; }
+  .callout-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .callout.tip  .callout-label { color: var(--green); }
+  .callout.warn .callout-label { color: var(--red); }
+  .callout.info .callout-label { color: var(--gold); }
+  .callout.key  .callout-label { color: #6A0DAD; }
+
+  .output-block { background: #F0F4F0; border: 1px solid #C8D8C8; border-radius: 6px; padding: 1.25rem 1.5rem; font-family: 'Source Code Pro', monospace; font-size: 0.82rem; line-height: 1.8; margin: 1.5rem 0; overflow-x: auto; white-space: pre; }
+  .output-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 0.5rem; }
+
+  /* Confusion matrix table */
+  .cm-section { margin: 2rem 0; }
+  .cm-section h3 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem; padding: 0.4rem 0.8rem; border-radius: 4px; display: inline-block; }
+  .cm-section h3.dt { background: #FDF0F0; color: var(--red); }
+  .cm-section h3.rf { background: var(--green-light); color: var(--green); }
+  .cm-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 0.75rem; }
+  .cm-box { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .cm-box.rf-box { border-color: var(--green); }
+  .cm-title { font-size: 0.8rem; font-weight: 600; color: var(--gray); margin-bottom: 0.75rem; text-align: center; }
+  .cm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 0.6rem; }
+  .cm-cell { padding: 0.5rem; border-radius: 5px; text-align: center; }
+  .cm-cell .val { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; line-height: 1; }
+  .cm-cell .lbl { font-size: 0.7rem; color: var(--gray); margin-top: 2px; }
+  .tn { background: #EAF5EA; } .tn .val { color: var(--green); }
+  .fp { background: #FEFBF0; } .fp .val { color: var(--amber); }
+  .fn { background: #FDF0F0; } .fn .val { color: var(--red); }
+  .tp-bad  { background: #FDF0F0; } .tp-bad .val  { color: var(--red); }
+  .tp-good { background: #EAF5EA; } .tp-good .val { color: var(--green); }
+  .cm-stats { font-size: 0.78rem; color: var(--gray); text-align: center; }
+  .cm-stats .bad  { color: var(--red); font-weight: 600; }
+  .cm-stats .good { color: var(--green); font-weight: 600; }
+
+  /* Stat row */
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .stat-box { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .stat-val { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
+  .stat-lbl { font-size: 0.78rem; color: var(--gray); line-height: 1.4; }
+  .stat-val.bad  { color: var(--red); }
+  .stat-val.good { color: var(--green); }
+  .stat-val.warn { color: var(--amber); }
+
+  /* Result image */
+  .tree-img-wrap { margin: 1.5rem 0; }
+  .tree-img-wrap img { width: 100%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+  .tree-img-caption { font-size: 0.83rem; color: var(--gray); line-height: 1.6; margin-top: 0.6rem; font-style: italic; }
+  .tree-img-caption strong { color: var(--navy); font-style: normal; }
+
+  .divider { border: none; border-top: 1px solid var(--lgray); margin: 2.5rem 0; }
+
+  footer { background: var(--navy); color: #7A8FA0; text-align: center; padding: 2.5rem 1rem; margin-top: 5rem; font-size: 0.85rem; }
+  footer a { color: #A8C4E0; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
+  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Tutorial · Python · Model Comparison · Credit Risk</div>
+  <h1>XGBoost Catches 25x<br>More Defaults.<br><em>Here's What That Costs You.</em></h1>
+  <p class="hero-sub">Random Forest asks 500 trees to vote. XGBoost asks each new tree to fix what the last one got wrong. Same problem, completely different philosophy — and on real LendingClub data, the difference is not subtle. Here's the full head-to-head: performance, stability, and explainability.</p>
+  <div class="hero-meta">
+    <span>🐍 Python Script</span>
+    <span>📊 scikit-learn · XGBoost · SHAP · matplotlib</span>
+    <span>📅 2026</span>
+    <span>⏱ ~30 min</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#problem">Voting vs. Correcting</a></li>
+      <li><a href="#concept">Two Philosophies, No Math Yet</a></li>
+      <li><a href="#setup">Setup & Imports</a></li>
+      <li><a href="#data">Load the LendingClub Dataset</a></li>
+      <li><a href="#models">Train Both Models</a></li>
+      <li><a href="#performance">Head-to-Head Performance</a></li>
+      <li><a href="#stability">Stability Test — 20% Data Refresh</a></li>
+      <li><a href="#shap">SHAP Comparison — Both Models</a></li>
+      <li><a href="#learning">Learning Curve — Error Correction</a></li>
+      <li><a href="#verdict">The Honest Verdict</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="problem">
+    <div class="section-num">01 — The Problem</div>
+    <h2>500 Trees Voting vs. 500 Trees Correcting</h2>
+    <p>Random Forest builds 500 independent trees and lets them vote. XGBoost builds 500 trees sequentially, each one trained specifically to fix what the previous ensemble got wrong. Same dataset, same target, completely different philosophy.</p>
+    <p>I wanted to know which one actually catches more defaults on real credit risk data, and whether the winner pays a price for it. The results surprised me.</p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-val bad">25x</div>
+        <div class="stat-lbl">more defaults caught by XGBoost</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val warn">22.8%</div>
+        <div class="stat-lbl">XGBoost precision (vs. 43.2% for Random Forest)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">10.2%</div>
+        <div class="stat-lbl">of predictions shifted after a routine refresh</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val good">0.711</div>
+        <div class="stat-lbl">XGBoost AUC-ROC (vs. 0.677 for Random Forest)</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 2 -->
+  <div class="section" id="concept">
+    <div class="section-num">02 — Key Concept</div>
+    <h2>Two Philosophies, Explained Without Math</h2>
+    <p>Before any code, the intuition matters, because these two algorithms approach the same problem from opposite directions.</p>
+    <div class="callout key">
+      <div class="callout-label">The Core Trade-off</div>
+      <p><strong>Random Forest averages</strong> — 500 independent trees, each trained on a random sample of the data, vote and the majority wins. Individual errors get averaged out. The wisdom of the crowd.</p>
+      <p style="margin-top:0.5rem;"><strong>XGBoost corrects</strong> — the first tree makes predictions and gets some wrong. The second tree is trained specifically on those mistakes. The third corrects what the second got wrong. And so on, for 500 rounds.</p>
+    </div>
+    <p>Averaging produces a stable, conservative model. Correcting produces a more aggressive, more sensitive model. Neither is "wrong" — which one you want depends on what your institution's errors actually cost.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3 -->
+  <div class="section" id="setup">
+    <div class="section-num">03 — Setup</div>
+    <h2>Imports</h2>
+    <div class="code-block">
+      <div class="code-header"><span>setup.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">import warnings
+warnings.filterwarnings('ignore')
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import shap
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import (
+    confusion_matrix, accuracy_score, recall_score,
+    precision_score, f1_score, roc_auc_score
+)
+import xgboost as xgb
+
+# Install if needed:
+# pip install scikit-learn xgboost shap pandas numpy matplotlib</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4 -->
+  <div class="section" id="data">
+    <div class="section-num">04 — Data</div>
+    <h2>Load the LendingClub Dataset</h2>
+    <p>Same five borrower features and the same LendingClub sample used throughout this tutorial series, so results here are directly comparable to the Decision Trees vs. Random Forest and SHAP tutorials.</p>
+    <div class="code-block">
+      <div class="code-header"><span>load_data.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">DATA_PATH = "lendingclub_sample_25000.csv"   # update path if needed
+
+df = pd.read_csv(DATA_PATH, low_memory=False)
+
+FEATURES = ['int_rate', 'dti', 'fico_range_high', 'annual_inc', 'loan_amnt']
+TARGET   = 'bad_loan'
+
+FEATURE_LABELS = {
+    'int_rate':        'Interest Rate',
+    'dti':             'Debt-to-Income Ratio',
+    'fico_range_high': 'FICO Score',
+    'annual_inc':      'Annual Income',
+    'loan_amnt':       'Loan Amount'
+}
+
+df = df[FEATURES + [TARGET]].dropna()
+df[TARGET] = pd.to_numeric(df[TARGET], errors='coerce')
+df = df.dropna()
+
+X = df[FEATURES].rename(columns=FEATURE_LABELS)
+y = df[TARGET].astype(int)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+print(f"Dataset: {len(df):,} loans  |  Bad loan rate: {y.mean():.1%}")</code></pre>
+    </div>
+    <div class="callout tip">
+      <div class="callout-label">Features</div>
+      Interest rate, debt-to-income ratio, FICO score, annual income, and loan amount — five core underwriting variables that capture different dimensions of borrower risk. 24,977 loans after cleaning, roughly 13% bad loan rate.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5 -->
+  <div class="section" id="models">
+    <div class="section-num">05 — Train Both Models</div>
+    <h2>Train Both Models</h2>
+    <p>Both models get 500 trees, so neither wins on a raw tree-count advantage. Everything else about this comparison follows from how each algorithm uses those 500 trees, not from how many it gets.</p>
+    <div class="code-block">
+      <div class="code-header"><span>train_models.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">rf = RandomForestClassifier(
+    n_estimators=500,
+    random_state=42,
+    n_jobs=-1
+)
+rf.fit(X_train, y_train)
+
+xgb_model = xgb.XGBClassifier(
+    n_estimators=500,
+    learning_rate=0.05,
+    max_depth=4,
+    subsample=0.8,
+    colsample_bytree=0.8,
+    scale_pos_weight=(y_train == 0).sum() / (y_train == 1).sum(),
+    random_state=42,
+    eval_metric='logloss',
+    verbosity=0
+)
+xgb_model.fit(X_train, y_train)</code></pre>
+    </div>
+    <div class="callout info">
+      <div class="callout-label">Why scale_pos_weight?</div>
+      Only about 13% of loans in this dataset default. Left alone, XGBoost optimizes for overall error and will happily predict "good loan" for almost everyone, since that's right 87% of the time. <code>scale_pos_weight</code> tells XGBoost how much more a missed default should cost than a missed good loan — here, roughly 6.7 to 1. Without this adjustment, XGBoost's recall on defaults collapses toward Random Forest's.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 6 -->
+  <div class="section" id="performance">
+    <div class="section-num">06 — Performance</div>
+    <h2>Head-to-Head Performance</h2>
+    <p>Same test set for both models — 4,996 borrowers held out from training.</p>
+    <div class="code-block">
+      <div class="code-header"><span>evaluate.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">def get_metrics(name, y_true, y_pred, y_prob):
+    cm = confusion_matrix(y_true, y_pred)
+    tn, fp, fn, tp = cm.ravel()
+    acc = accuracy_score(y_true, y_pred)
+    rec = recall_score(y_true, y_pred, zero_division=0)
+    pre = precision_score(y_true, y_pred, zero_division=0)
+    f1  = f1_score(y_true, y_pred, zero_division=0)
+    auc = roc_auc_score(y_true, y_prob)
+    print(f"\n{name}")
+    print(f"  TN={tn:,}  FP={fp:,}  FN={fn:,}  TP={tp:,}")
+    print(f"  Accuracy={acc:.3f}  Recall={rec:.3f}  Precision={pre:.3f}  F1={f1:.3f}  AUC={auc:.3f}")
+    return dict(name=name, tn=tn, fp=fp, fn=fn, tp=tp, acc=acc, rec=rec, pre=pre, f1=f1, auc=auc)
+
+rf_metrics  = get_metrics("Random Forest", y_test, rf.predict(X_test), rf.predict_proba(X_test)[:, 1])
+xgb_metrics = get_metrics("XGBoost", y_test, xgb_model.predict(X_test), xgb_model.predict_proba(X_test)[:, 1])</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Output</span>
+Random Forest
+  TN=4,324  FP=21  FN=635  TP=16
+  Accuracy=0.869  Recall=0.025  Precision=0.432  F1=0.047  AUC=0.677
+
+XGBoost
+  TN=2,960  FP=1,385  FN=243  TP=408
+  Accuracy=0.674  Recall=0.627  Precision=0.228  F1=0.334  AUC=0.711</div>
+
+    <div class="cm-section">
+      <div class="cm-compare">
+        <div class="cm-box">
+          <div class="cm-title">Random Forest</div>
+          <div class="cm-grid">
+            <div class="cm-cell tn"><div class="val">4,324</div><div class="lbl">TN</div></div>
+            <div class="cm-cell fp"><div class="val">21</div><div class="lbl">FP</div></div>
+            <div class="cm-cell fn"><div class="val">635</div><div class="lbl">FN</div></div>
+            <div class="cm-cell tp-good"><div class="val">16</div><div class="lbl">TP</div></div>
+          </div>
+          <div class="cm-stats">Recall: <span class="bad">2.5%</span> · Precision: <span class="good">43.2%</span></div>
+        </div>
+        <div class="cm-box rf-box">
+          <div class="cm-title">XGBoost</div>
+          <div class="cm-grid">
+            <div class="cm-cell tn"><div class="val">2,960</div><div class="lbl">TN</div></div>
+            <div class="cm-cell fp"><div class="val">1,385</div><div class="lbl">FP</div></div>
+            <div class="cm-cell fn"><div class="val">243</div><div class="lbl">FN</div></div>
+            <div class="cm-cell tp-good"><div class="val">408</div><div class="lbl">TP</div></div>
+          </div>
+          <div class="cm-stats">Recall: <span class="good">62.7%</span> · Precision: <span class="bad">22.8%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tree-img-wrap">
+      <img src="img/xgb_rf_confusion_matrices.png"
+           alt="Side-by-side confusion matrices comparing Random Forest and XGBoost on the same 4,996-borrower test set">
+      <p class="tree-img-caption"><strong>Figure:</strong> Random Forest flags almost nobody as risky and misses nearly every default. XGBoost catches 408 of 651 actual defaults, at the cost of 1,385 false alarms on good borrowers.</p>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-label">Wait — XGBoost wins recall AND loses precision?</div>
+      Yes, and this is the trade-off the whole tutorial is about. When Random Forest flags a borrower as a default risk, it's right 43.2% of the time. When XGBoost flags one, it's right only 22.8% of the time. XGBoost catches far more actual defaults, but for every real default it catches, it also incorrectly flags roughly three good borrowers. Which posture is correct depends on your institution's costs, not on which number is bigger.
+    </div>
+
+    <div class="tree-img-wrap">
+      <img src="img/xgb_rf_metrics_comparison.png"
+           alt="Bar chart comparing Recall, Precision, F1, and AUC-ROC between Random Forest and XGBoost">
+      <p class="tree-img-caption"><strong>Figure:</strong> XGBoost wins on three of four metrics — recall, F1, and AUC-ROC. Random Forest wins on precision. The size of that precision gap is the real story here.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 7 -->
+  <div class="section" id="stability">
+    <div class="section-num">07 — Stability</div>
+    <h2>Stability Test — 20% Data Refresh</h2>
+    <p>The Decision Trees vs. Random Forest tutorial showed Random Forest is far more stable than a single Decision Tree after a routine data refresh. The open question here: how does XGBoost compare to Random Forest on the same test?</p>
+    <div class="code-block">
+      <div class="code-header"><span>stability_test.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">np.random.seed(42)
+n = len(X_train)
+keep_idx = np.random.choice(X_train.index, int(n * 0.80), replace=False)
+X_keep   = X_train.loc[keep_idx]
+y_keep   = y_train.loc[keep_idx]
+
+n_new    = n - len(keep_idx)
+X_new    = X_keep.sample(n_new, replace=True, random_state=7).copy()
+X_new['Interest Rate'] += np.random.normal(0.5, 0.3, n_new)
+X_new['FICO Score']    += np.random.normal(-5,  3,   n_new)
+X_new.index = range(max(X_train.index) + 1, max(X_train.index) + 1 + n_new)
+y_new       = y_keep.sample(n_new, replace=True, random_state=7)
+y_new.index = X_new.index
+
+X_train2 = pd.concat([X_keep, X_new])
+y_train2 = pd.concat([y_keep, y_new])
+
+rf2 = RandomForestClassifier(n_estimators=500, random_state=42, n_jobs=-1)
+rf2.fit(X_train2, y_train2)
+
+xgb2 = xgb.XGBClassifier(
+    n_estimators=500, learning_rate=0.05, max_depth=4,
+    subsample=0.8, colsample_bytree=0.8,
+    scale_pos_weight=(y_train2 == 0).sum() / (y_train2 == 1).sum(),
+    random_state=42, eval_metric='logloss', verbosity=0
+)
+xgb2.fit(X_train2, y_train2)
+
+rf_flipped  = (rf.predict(X_test)  != rf2.predict(X_test)).sum()
+xgb_flipped = (xgb_model.predict(X_test) != xgb2.predict(X_test)).sum()</code></pre>
+    </div>
+    <div class="callout info">
+      <div class="callout-label">Why this is realistic</div>
+      A 20% monthly turnover is conservative for most retail loan portfolios. The rate and FICO shifts are small — well within normal market movement. This is not a stress test. It's a routine refresh.
+    </div>
+
+    <div class="output-block"><span class="output-label">Output</span>
+Predictions that changed after refresh (4,996 test borrowers):
+  Random Forest:  41 (0.8%)
+  XGBoost:        510 (10.2%)</div>
+
+    <div class="tree-img-wrap">
+      <img src="img/xgb_rf_stability.png"
+           alt="Bar charts showing Recall, Precision, and F1 before and after a 20% data refresh for Random Forest and XGBoost">
+      <p class="tree-img-caption"><strong>Figure:</strong> Random Forest's metrics barely move after the refresh. XGBoost's aggregate metrics look similarly stable — but 10.2% of individual borrowers still received a different prediction, a shift that's invisible if you only watch the headline numbers.</p>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-label">Wait — XGBoost moved 10x more than Random Forest?</div>
+      Random Forest averages across 500 independent trees — when 20% of the training data changes, roughly 20% of each tree's bootstrap sample changes, but across 500 trees that produces a very stable aggregate vote. XGBoost's sequential structure means the early trees, which set the direction for everything that follows, are sensitive to the composition of the training data. When the early trees shift, later corrections compound that shift. For a production model refreshed monthly, that means a borrower approved last month might be declined this month not because their risk changed, but because the model shifted underneath them.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 8 -->
+  <div class="section" id="shap">
+    <div class="section-num">08 — Explainability</div>
+    <h2>SHAP Comparison — Both Models</h2>
+    <p>Both models agree that interest rate is the dominant feature, and that agreement matters. It means the underlying credit risk signal is real, not an artifact of either algorithm's particular mechanics. But the degree of dominance, and the scale it's measured on, differ in a way that's easy to misread.</p>
+    <div class="code-block">
+      <div class="code-header"><span>shap_analysis.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">X_sample = X_test.sample(500, random_state=42)
+
+# Random Forest SHAP
+bg_rf        = shap.maskers.Independent(X_train, max_samples=100)
+explainer_rf = shap.TreeExplainer(rf, bg_rf)
+sv_rf        = explainer_rf(X_sample)[:, :, 1]
+
+# XGBoost SHAP
+explainer_xgb = shap.TreeExplainer(xgb_model)
+sv_xgb        = explainer_xgb(X_sample)
+
+imp_rf  = pd.Series(np.abs(sv_rf.values).mean(axis=0),  index=X_sample.columns).sort_values(ascending=False)
+imp_xgb = pd.Series(np.abs(sv_xgb.values).mean(axis=0), index=X_sample.columns).sort_values(ascending=False)</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Feature importance (mean |SHAP|)</span>
+Random Forest              XGBoost
+Interest Rate      0.0627  Interest Rate      0.7165
+FICO Score         0.0237  FICO Score         0.1842
+Annual Income      0.0236  Annual Income      0.1700
+Loan Amount        0.0209  Debt-to-Income     0.1697
+Debt-to-Income     0.0206  Loan Amount        0.1521</div>
+
+    <div class="tree-img-wrap">
+      <img src="img/xgb_rf_shap_importance.png"
+           alt="Bar charts comparing mean absolute SHAP values for Random Forest and XGBoost">
+      <p class="tree-img-caption"><strong>Figure:</strong> Both models rank interest rate first. In XGBoost the gap to the second-place feature looks far larger in raw numbers — that's a scale artifact, not a bigger real-world effect.</p>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-label">Careful — these two scales aren't directly comparable</div>
+      Random Forest SHAP values here represent contributions to predicted probability, on a 0-to-1 scale. XGBoost SHAP values represent contributions in log-odds space, which has a wider range and isn't on the same scale as the probability-space values from Random Forest. Both models correctly identify interest rate as dominant — the size of the number is a modeling artifact of the output scale, not a substantive finding about which model "trusts" interest rate more.
+    </div>
+
+    <div class="tree-img-wrap">
+      <img src="img/xgb_rf_shap_beeswarm.png"
+           alt="SHAP beeswarm plots for Random Forest and XGBoost showing feature value and impact on prediction for each borrower">
+      <p class="tree-img-caption"><strong>Figure:</strong> Same directional story in both models — high interest rate (pink/red) pushes toward default, low interest rate (blue) pushes away from it. Look at the x-axis scales, not just the dot patterns: Random Forest spans roughly -0.15 to +0.25, XGBoost spans roughly -3.0 to +1.0. Same signal, different units.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 9 -->
+  <div class="section" id="learning">
+    <div class="section-num">09 — Learning Curve</div>
+    <h2>Error Correction in Action</h2>
+    <p>This is where the sequential error-correction philosophy becomes visible. Each point on the x-axis is one additional tree added to the XGBoost ensemble, tracked on both the training set and the held-out test set.</p>
+    <div class="code-block">
+      <div class="code-header"><span>learning_curve.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">xgb_lc = xgb.XGBClassifier(
+    n_estimators=500, learning_rate=0.05, max_depth=4,
+    subsample=0.8, colsample_bytree=0.8,
+    scale_pos_weight=(y_train == 0).sum() / (y_train == 1).sum(),
+    random_state=42, eval_metric=['logloss', 'auc'], verbosity=0
+)
+xgb_lc.fit(
+    X_train, y_train,
+    eval_set=[(X_train, y_train), (X_test, y_test)],
+    verbose=False
+)
+
+results = xgb_lc.evals_result()</code></pre>
+    </div>
+
+    <div class="tree-img-wrap">
+      <img src="img/xgb_learning_curve.png"
+           alt="Line charts showing training and test log loss and AUC-ROC across 500 XGBoost boosting rounds">
+      <p class="tree-img-caption"><strong>Figure:</strong> Training loss keeps falling and training AUC keeps climbing all the way to round 500. Test performance levels off around round 100 and barely moves after that.</p>
+    </div>
+
+    <div class="callout warn">
+      <div class="callout-label">The gap is overfitting</div>
+      XGBoost is still correcting errors after round 100, but they're errors specific to the training data, not errors that generalize to new borrowers. The error-correction approach is powerful but requires early stopping or careful tuning of the number of rounds. A practitioner would typically use cross-validation to find the optimal round count — likely somewhere around 100 to 150 for this dataset.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 10 -->
+  <div class="section" id="verdict">
+    <div class="section-num">10 — Verdict</div>
+    <h2>The Honest Verdict</h2>
+    <p>XGBoost wins on default detection, and it isn't close. 408 defaults caught versus 16 is not a marginal difference — it's the difference between a model that functions as a credit risk tool and one that effectively predicts "good loan" for almost everyone.</p>
+    <p>But the win has real costs. Precision drops: for every default XGBoost correctly identifies, it incorrectly flags roughly three good borrowers. Stability drops: a 10.2% prediction flip after a routine refresh means roughly one in ten borrowers could see a different outcome month over month, regardless of any change in their own risk. And overfitting needs attention: the learning curve plateaus around round 100, so running 500 rounds without early stopping isn't optimal.</p>
+
+    <div class="callout key">
+      <div class="callout-label">The Decision Framework</div>
+      <p><strong>Catching defaults is the primary objective, false positives are manageable:</strong> use XGBoost, with proper tuning and early stopping.</p>
+      <p style="margin-top:0.5rem;"><strong>Prediction stability across refreshes matters as much as raw detection:</strong> use Random Forest, possibly combined with threshold adjustment to improve recall.</p>
+      <p style="margin-top:0.5rem;"><strong>Production system, monthly retraining, regulatory oversight:</strong> consider both, with careful monitoring of prediction drift after each refresh.</p>
+    </div>
+
+    <p>The choice between XGBoost and Random Forest isn't which algorithm is better. It's what you're optimizing for, and what your institution's costs are for each type of error.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- MORE TUTORIALS -->
+  <div style="text-align:center; padding: 2.5rem 0; border-top: 1px solid var(--lgray); margin-top: 1rem;">
+    <p style="font-size:0.95rem; color: var(--gray);">
+      Browse all tutorials at
+      <a href="https://james-mott.jimmott52.workers.dev/#tutorials"
+         style="color: var(--navy); font-weight:600; text-decoration:none; border-bottom: 1px solid var(--navy);">
+        james-mott.jimmott52.workers.dev/#tutorials
+      </a>
+    </p>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</footer>
+
+<script>
+  hljs.highlightAll();
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
