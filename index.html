@@ -1784,41 +1784,41 @@
   #webinars .section-header { margin-bottom: 1rem; }
   .webinar-subhead { font-size: 1.05rem; color: #888; max-width: 540px; line-height: 1.6; margin: 0 0 3.5rem; }
   .webinar-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-  .webinar-card { background: #161613; border: 1px solid #2a2a26; border-radius: 6px; padding: 2rem; display: flex; flex-direction: column; gap: 1rem; position: relative; overflow: hidden; transition: border-color 0.2s ease; }
-  .webinar-card:hover { border-color: #4a4a42; }
-  .webinar-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, #c8b89a 0%, transparent 80%); opacity: 0.6; }
+  .webinar-card { background: #fff; border: 1px solid var(--rule); border-radius: 6px; padding: 2rem; display: flex; flex-direction: column; gap: 1rem; position: relative; overflow: hidden; transition: border-color 0.2s ease; }
+  .webinar-card:hover { border-color: var(--accent); }
+  .webinar-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent) 0%, transparent 80%); opacity: 0.6; }
   .webinar-card-meta { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
-  .webinar-badge { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; border-radius: 2px; border: 1px solid; }
-  .badge-free { color: #7ab87a; border-color: #3a5a3a; background: rgba(122,184,122,0.06); }
-  .badge-soon { color: #a89878; border-color: #4a3e2a; background: rgba(168,152,120,0.06); }
-  .badge-topic { color: #888; border-color: #2a2a26; background: transparent; }
-  .webinar-card-title { font-size: 1.25rem; font-weight: 700; color: #f0ece4; line-height: 1.25; margin: 0; }
-  .webinar-card-desc { font-size: 0.92rem; color: #888; line-height: 1.65; margin: 0; flex: 1; }
+  .webinar-badge { font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; padding: 3px 10px; border-radius: 2px; border: 1px solid; }
+  .badge-free { color: #2d7a2d; border-color: #a8d5a8; background: #f0faf0; }
+  .badge-soon { color: var(--accent-warm); border-color: #f0c8a0; background: #fdf5ee; }
+  .badge-topic { color: var(--ink-muted); border-color: var(--rule); background: transparent; }
+  .webinar-card-title { font-size: 1.25rem; font-weight: 700; color: var(--ink); line-height: 1.25; margin: 0; }
+  .webinar-card-desc { font-size: 0.92rem; color: var(--ink-soft); line-height: 1.65; margin: 0; flex: 1; }
   .webinar-takeaways { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 0.4rem; }
-  .webinar-takeaways li { font-size: 0.85rem; color: #777; display: flex; gap: 0.5rem; line-height: 1.45; }
-  .webinar-takeaways li::before { content: '·'; color: #c8b89a; flex-shrink: 0; }
-  .webinar-card-audience { font-size: 0.82rem; color: #666; display: flex; gap: 0.5rem; }
-  .webinar-card-audience::before { content: '→'; color: #c8b89a; flex-shrink: 0; }
-  .webinar-card-divider { border: none; border-top: 1px solid #2a2a26; margin: 0; }
+  .webinar-takeaways li { font-size: 0.85rem; color: var(--ink-soft); display: flex; gap: 0.5rem; line-height: 1.45; }
+  .webinar-takeaways li::before { content: '·'; color: var(--accent); flex-shrink: 0; }
+  .webinar-card-audience { font-size: 0.82rem; color: var(--ink-muted); display: flex; gap: 0.5rem; }
+  .webinar-card-audience::before { content: '→'; color: var(--accent); flex-shrink: 0; }
+  .webinar-card-divider { border: none; border-top: 1px solid var(--rule); margin: 0; }
   .webinar-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
-  .webinar-record-note { font-size: 0.78rem; color: #555; font-style: italic; }
-  .webinar-cta { display: inline-block; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; color: #c8b89a; text-decoration: none; border: 1px solid #4a3e2a; padding: 6px 16px; border-radius: 2px; transition: background 0.18s, color 0.18s; white-space: nowrap; }
-  .webinar-cta:hover { background: #c8b89a; color: #0d0d0b; }
-  .webinar-more { margin-top: 2.5rem; font-size: 0.88rem; color: #555; font-style: italic; }
+  .webinar-record-note { font-size: 0.78rem; color: var(--ink-muted); font-style: italic; }
+  .webinar-cta { display: inline-block; font-size: 0.82rem; font-weight: 600; letter-spacing: 0.04em; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 6px 16px; border-radius: 2px; transition: background 0.18s, color 0.18s; white-space: nowrap; }
+  .webinar-cta:hover { background: var(--accent); color: #fff; }
+  .webinar-more { margin-top: 2.5rem; font-size: 0.88rem; color: var(--ink-muted); font-style: italic; }
+  .webinar-subhead { font-size: 1rem; color: var(--ink-soft); max-width: 60ch; margin-bottom: 2.5rem; line-height: 1.7; }
 </style>
 
-<section id="webinars">
+<section id="webinars" style="background: var(--paper-warm);">
   <div class="section-header">
     <span class="section-label">07b — Live Sessions</span>
     <h2>Webinars &amp;<br><em>Live Talks</em></h2>
   </div>
-  <p class="webinar-subhead">Free, practical sessions on data science and AI — the kind of clarity that takes years in the field to develop, delivered in an hour.</p>
+  <p class="webinar-subhead">Practical, instructor-led sessions on data science and AI — free to attend, offered live on a rotating schedule. Each session includes a live code demonstration and Q&amp;A. Slides and materials are shared with all attendees after each session.</p>
 
   <div class="webinar-grid">
     <article class="webinar-card">
       <div class="webinar-card-meta">
         <span class="webinar-badge badge-free">Free</span>
-        <span class="webinar-badge badge-soon">Recording coming soon</span>
         <span class="webinar-badge badge-topic">Strategy · CRISP-DM</span>
       </div>
       <h3 class="webinar-card-title">Data Science Strategy: Why Strategy Matters in Data Science &amp; AI Projects</h3>
@@ -1832,13 +1832,13 @@
       <p class="webinar-card-audience">Best for: analysts, project managers, and executives contemplating or running a data science or AI initiative</p>
       <hr class="webinar-card-divider">
       <div class="webinar-card-footer">
-        <span class="webinar-record-note">Recording posted after first live session</span>
+        <span class="webinar-record-note">Offered live — next session date to be announced</span>
         <a href="mailto:Jimmott52@gmail.com?subject=Webinar%20Interest%3A%20Data%20Science%20Strategy" class="webinar-cta">Get notified &rarr;</a>
       </div>
     </article>
   </div>
 
-  <p class="webinar-more">Additional webinars in development — check back or reach out to request a topic.</p>
+  <p class="webinar-more">Additional sessions in development — <a href="mailto:Jimmott52@gmail.com?subject=Webinar%20Inquiry" style="color:var(--accent); text-decoration:none; font-weight:500;">reach out</a> to request a topic or ask about upcoming dates.</p>
 </section>
 
 <!-- ASK JAMES -->
