@@ -97,12 +97,10 @@
 </style>
 </head>
 <body>
-
 <nav>
   <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
   <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
 </nav>
-
 <div class="hero">
   <div class="hero-tag">Tutorial · Python · Credit Risk · Segmentation</div>
   <h1>Your PD Model Tells You Who's Risky.<br><em>LCA Tells You Why.</em></h1>
@@ -114,9 +112,7 @@
     <span>⏱ ~25 min</span>
   </div>
 </div>
-
 <div class="container">
-
   <nav class="toc">
     <div class="toc-title">Contents</div>
     <ol>
@@ -131,7 +127,6 @@
       <li><a href="#results">What the Four Classes Tell Us</a></li>
     </ol>
   </nav>
-
   <div class="section" id="overview">
     <div class="section-num">01 — The Problem</div>
     <h2>What a PD Score Can't Tell You</h2>
@@ -143,23 +138,19 @@
       LCA doesn't replace your scorecard. It fills the gap your scorecard leaves open: the <em>story</em> of who your borrowers are, what segments live inside your portfolio, and how risk takes different shapes for different people.
     </div>
   </div>
-
   <hr class="divider">
-
   <div class="section" id="what-is-lca">
     <div class="section-num">02 — Concept</div>
     <h2>What Is Latent Class Analysis?</h2>
     <p>Latent Class Analysis is a statistical technique that finds hidden subgroups in data based on patterns across multiple variables at once. It has been a workhorse in market research for decades — segmenting consumers by buying behavior, attitudes, or product preferences — but it is rarely applied to credit risk.</p>
     <p>Where a PD model asks <em>"how risky is this borrower?"</em>, LCA asks a different question: <em>"what kinds of borrowers exist in my portfolio, and how do they differ?"</em></p>
-    <p>The output is a small number of distinct profiles, each defined by a combination of attributes rather than a single score. In this tutorial we implement LCA using a <strong>Gaussian Mixture Model (GMM)</strong> on discretized features, with the four-class solution chosen by AIC/BIC.</p>
+    <p>The output is a small number of distinct profiles, each defined by a combination of attributes rather than a single score. In this tutorial we implement LCA using a <strong>Gaussian Mixture Model (GMM)</strong> on discretized features. We tested class solutions from two through six and retained four classes for interpretability — AIC and BIC continued to improve beyond four, so the choice reflects a deliberate tradeoff rather than a statistically optimal stopping point.</p>
     <div class="callout tip">
       <div class="callout-label">Dataset</div>
       25,000-loan LendingClub sample. Five borrower attributes: interest rate, annual income, DTI, FICO score, and loan purpose — each discretized into bins. Loan status is held out and compared against segments after the fact.
     </div>
   </div>
-
   <hr class="divider">
-
   <div class="section" id="setup">
     <div class="section-num">03 — Setup</div>
     <h2>Imports</h2>
@@ -167,20 +158,16 @@
       <div class="code-header"><span>setup.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <pre><code class="language-python">import warnings
 warnings.filterwarnings('ignore')
-
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.preprocessing import LabelEncoder, KBinsDiscretizer
 from sklearn.mixture import GaussianMixture
-
 print("✅ Libraries loaded")</code></pre>
     </div>
   </div>
-
   <hr class="divider">
-
   <div class="section" id="data">
     <div class="section-num">04 — Data Preparation</div>
     <h2>Load, Clean & Discretize</h2>
@@ -189,9 +176,7 @@ print("✅ Libraries loaded")</code></pre>
       <div class="code-header"><span>load_data.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <pre><code class="language-python">DATA_PATH = "lendingclub_sample_25000.csv"
 OUTPUT_DIR = "."
-
 df_raw = pd.read_csv(DATA_PATH, low_memory=False)
-
 # Customer ID for traceability
 if 'id' in df_raw.columns:
     df_raw['customer_id'] = df_raw['id']
@@ -199,12 +184,10 @@ elif 'member_id' in df_raw.columns:
     df_raw['customer_id'] = df_raw['member_id']
 else:
     df_raw['customer_id'] = df_raw.index
-
 # Select and clean columns
 cols = ['customer_id', 'int_rate', 'annual_inc', 'dti',
         'fico_range_high', 'purpose', 'loan_status']
 df = df_raw[cols].dropna()
-
 # Simplify loan purpose into 4 groups
 purpose_mapping = {
     'debt_consolidation': 'Debt',   'credit_card':      'Debt',
@@ -217,7 +200,6 @@ purpose_mapping = {
 }
 df['purpose'] = df['purpose'].map(purpose_mapping)
 df = df[df['purpose'].notna()]
-
 # Consolidate loan_status into Good / Bad / Neutral
 status_map = {
     'Fully Paid': 'Good',        'Current':             'Good',
@@ -227,19 +209,16 @@ status_map = {
 }
 df['loan_status'] = df['loan_status'].map(status_map)
 df = df[df['loan_status'].notna()]
-
 # Encode categoricals (alphabetical order — remember the mapping!)
 # purpose:     Debt=0, Investment=1, Other=2, Personal=3
 # loan_status: Bad=0,  Good=1,       Neutral=2
 df['purpose']     = LabelEncoder().fit_transform(df['purpose'])
 df['loan_status'] = LabelEncoder().fit_transform(df['loan_status'])
-
 # Discretize continuous features into 3 quantile bins
 # bin 0 = Low, bin 1 = Medium, bin 2 = High
 continuous_cols = ['int_rate', 'annual_inc', 'dti', 'fico_range_high']
 discretizer = KBinsDiscretizer(n_bins=3, encode='ordinal', strategy='quantile')
 df[continuous_cols] = discretizer.fit_transform(df[continuous_cols])
-
 print(f"Final dataset: {len(df):,} rows")</code></pre>
     </div>
     <div class="callout warn">
@@ -247,9 +226,7 @@ print(f"Final dataset: {len(df):,} rows")</code></pre>
       <code>LabelEncoder</code> assigns codes alphabetically. Debt=0, Investment=1, Other=2, Personal=3. Keep this mapping in mind when interpreting the heatmap columns later.
     </div>
   </div>
-
   <hr class="divider">
-
   <div class="section" id="model">
     <div class="section-num">05 — Modeling</div>
     <h2>Fit the Gaussian Mixture Model</h2>
@@ -258,19 +235,15 @@ print(f"Final dataset: {len(df):,} rows")</code></pre>
       <div class="code-header"><span>fit_gmm.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <pre><code class="language-python"># Features for clustering — hold out loan_status and customer_id
 X = df.drop(columns=['loan_status', 'customer_id'])
-
 # Fit GMM with 4 latent classes
 gmm = GaussianMixture(n_components=4, random_state=42)
 raw_classes = gmm.fit_predict(X)
-
 # Stabilize class numbering: largest segment → Class 0
 order = pd.Series(raw_classes).value_counts().index.tolist()
 remap = {old: new for new, old in enumerate(order)}
 df['latent_class'] = pd.Series(raw_classes, index=df.index).map(remap)
-
 print("Class sizes (after re-numbering):")
 print(df['latent_class'].value_counts().sort_index())
-
 # Export full dataset and per-class files
 df.to_csv(f"{OUTPUT_DIR}/lendingclub_with_latent_classes.csv", index=False)
 for class_id in sorted(df['latent_class'].unique()):
@@ -285,9 +258,7 @@ latent_class
 2     4701
 3     2323</div>
   </div>
-
   <hr class="divider">
-
   <div class="section" id="profile">
     <div class="section-num">06 — Profiling</div>
     <h2>Build the Within-Class Profile Table</h2>
@@ -299,17 +270,14 @@ latent_class
       .groupby('latent_class')
       .agg(lambda x: x.value_counts(normalize=True).to_dict())
 )
-
 expanded_summary = {}
 for col in summary.columns:
     temp_df = pd.DataFrame(summary[col].tolist(), index=summary.index)
     temp_df.columns = [f"{col}_{str(c)}" for c in temp_df.columns]
     expanded_summary.update(temp_df.to_dict(orient="series"))
 summary_df = pd.DataFrame(expanded_summary)
-
 col_percent = (summary_df * 100).round(1)
 col_percent.to_csv(f"{OUTPUT_DIR}/latent_class_summary_4class_column_percents.csv")
-
 # Human-readable labels
 # Continuous (quantile bins):  0=Low, 1=Medium, 2=High
 # purpose (alphabetical):      0=Debt, 1=Investment, 2=Other, 3=Personal
@@ -335,7 +303,6 @@ label_map = {
     'loan_status_1':       'Good Loan',
     'loan_status_2':       'Neutral'
 }
-
 row_order = [
     'Low Interest Rate', 'Medium Interest Rate', 'High Interest Rate',
     'Low Income', 'Medium Income', 'High Income',
@@ -344,16 +311,13 @@ row_order = [
     'Debt Consolidation', 'Investment', 'Personal', 'Other',
     'Good Loan', 'Neutral', 'Bad Loan'
 ]
-
 col_percent_labeled = col_percent.T.copy()
 col_percent_labeled.index = [label_map.get(lbl, lbl) for lbl in col_percent_labeled.index]
 col_percent_labeled = col_percent_labeled.reindex(
     [r for r in row_order if r in col_percent_labeled.index])</code></pre>
     </div>
   </div>
-
   <hr class="divider">
-
   <div class="section" id="heatmap">
     <div class="section-num">07 — Visualization</div>
     <h2>The Profile Heatmap</h2>
@@ -373,18 +337,15 @@ plt.xlabel("Latent Class")
 plt.tight_layout()
 plt.savefig(f"{OUTPUT_DIR}/lca_heatmap.png", dpi=200, bbox_inches='tight')
 plt.show()
-
 # Row-percent heatmap (across classes)
 # "Of all borrowers with High DTI, what % are in each class?"
 row_percent = summary_df.T
 row_percent = row_percent.div(row_percent.sum(axis=1), axis=0) * 100
 row_percent = row_percent.round(1)
-
 row_percent_labeled = row_percent.copy()
 row_percent_labeled.index = [label_map.get(lbl, lbl) for lbl in row_percent_labeled.index]
 row_percent_labeled = row_percent_labeled.reindex(
     [r for r in row_order if r in row_percent_labeled.index])
-
 plt.figure(figsize=(10, 10))
 sns.heatmap(row_percent_labeled, annot=True, fmt=".1f",
             cmap="coolwarm", linewidths=.5,
@@ -398,7 +359,6 @@ plt.show()</code></pre>
       <div class="callout-label">Two heatmaps, two questions</div>
       The <strong>column-percent heatmap</strong> answers "what does a typical Class 3 borrower look like?" The <strong>row-percent heatmap</strong> answers "of all borrowers with High DTI, which class are they most likely in?" Use both together for a complete picture.
     </div>
-
     <div class="heatmap-wrap">
       <img src="img/lca_heatmap.png"
            alt="4-Segment Borrower Profile Heatmap — column percentages within each latent class"
@@ -412,9 +372,7 @@ plt.show()</code></pre>
       </p>
     </div>
   </div>
-
   <hr class="divider">
-
   <div class="section" id="selection">
     <div class="section-num">08 — Model Selection</div>
     <h2>Choosing the Number of Classes: AIC, BIC & Entropy</h2>
@@ -433,11 +391,9 @@ for n_classes in range(2, 7):
         "BIC":     g.bic(X),
         "Entropy": entropy
     })
-
 metrics_df = pd.DataFrame(metrics)
 metrics_df.to_csv(f"{OUTPUT_DIR}/lca_model_metrics.csv", index=False)
 print(metrics_df.to_string(index=False))
-
 # AIC & BIC plot
 plt.figure(figsize=(10, 5))
 plt.plot(metrics_df["Classes"], metrics_df["AIC"], marker='o', label="AIC", color='orange')
@@ -449,7 +405,6 @@ plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
-
 # Entropy plot
 plt.figure(figsize=(10, 5))
 plt.plot(metrics_df["Classes"], metrics_df["Entropy"], marker='o', color='green')
@@ -462,17 +417,14 @@ plt.show()</code></pre>
     </div>
     <div class="callout warn">
       <div class="callout-label">Interpreting the elbow</div>
-      Look for where AIC and BIC stop dropping sharply — that is the elbow. Entropy should also stabilize. In this analysis, four classes gave the best balance between fit and interpretability.
+      Look for where AIC and BIC stop dropping sharply, and where entropy stabilizes. In practice, real portfolios rarely show a clean elbow — in this analysis, AIC and BIC kept improving through six classes with no clear plateau, and entropy was not lowest at four. Four classes was retained as a deliberate interpretability tradeoff, not because the statistics leveled off there.
     </div>
   </div>
-
   <hr class="divider">
-
   <div class="section" id="results">
     <div class="section-num">09 — Results</div>
     <h2>What the Four Classes Tell Us</h2>
     <p>The segmentation surfaces four distinct borrower profiles. Bad loans don't share a common profile — there are two genuinely distinct failure modes, each requiring a different response.</p>
-
     <div class="segment-grid">
       <div class="segment-card prime">
         <span class="seg-rate">7.5% bad loan rate</span>
@@ -517,19 +469,15 @@ plt.show()</code></pre>
         <div class="seg-insight">Low income alone — even when other attributes look acceptable — pushes the bad-loan rate from 7.5% to 14.9%.</div>
       </div>
     </div>
-
     <div class="callout insight">
       <div class="callout-label">The key takeaway</div>
       A PD score collapses both failure modes into a single number. LCA shows they are distinct borrower types who need distinct strategies. The intervention that helps Class 1 (debt counseling, payment restructuring) is not the intervention that helps Class 3 (credit rebuilding, secured products).
     </div>
-
     <div class="method-note">
       <strong>Methodology note:</strong> 25,000-loan LendingClub sample, four-class Gaussian Mixture Model, class numbering stabilized by segment size. Single sample, single algorithm — segment names should be read as illustrative of what LCA can surface, not as a universal taxonomy of borrower risk.
     </div>
   </div>
-
   <hr class="divider">
-
   
   <!-- MORE TUTORIALS -->
   <div style="text-align:center; padding: 2.5rem 0; border-top: 1px solid var(--lgray); margin-top: 1rem;">
@@ -541,13 +489,10 @@ plt.show()</code></pre>
       </a>
     </p>
   </div>
-
 </div>
-
 <footer>
   <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
 </footer>
-
 <script>
   hljs.highlightAll();
   function copyCode(btn) {
