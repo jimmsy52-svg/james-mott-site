@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Blind Spots in Fraud Models — Webinar Materials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0F1420;
+    --surface:#161D2C;
+    --surface-2:#1D2538;
+    --line:#2A3348;
+    --text:#E8EAF0;
+    --text-dim:#9AA3B8;
+    --teal:#4FD1C5;
+    --rust:#C4432E;
+    --amber:#D9A441;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter', sans-serif;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--teal); color:#0F1420;}
+  a{color:inherit;}
+  .wrap{max-width:840px; margin:0 auto; padding:0 28px;}
+
+  /* ---------- HERO ---------- */
+  header.hero{
+    padding:96px 0 72px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:28px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:7px; height:7px;
+    background:var(--teal);
+    border-radius:50%;
+    display:inline-block;
+  }
+  h1{
+    font-family:'Newsreader', serif;
+    font-weight:500;
+    font-size:clamp(34px, 5vw, 50px);
+    line-height:1.12;
+    letter-spacing:-0.01em;
+    max-width:14ch;
+    margin-bottom:22px;
+  }
+  .dek{
+    font-size:17px;
+    color:var(--text-dim);
+    max-width:52ch;
+    margin-bottom:36px;
+  }
+
+  /* confusion-matrix signature mark */
+  .cm{
+    display:grid;
+    grid-template-columns:repeat(2, 74px);
+    grid-template-rows:repeat(2, 46px);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    width:max-content;
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+  }
+  .cm div{
+    background:var(--surface);
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    justify-content:center;
+    padding:0 12px;
+    gap:2px;
+  }
+  .cm .num{font-size:16px; font-weight:500; font-family:'Inter',sans-serif;}
+  .cm .tp .num{color:var(--teal);}
+  .cm .fn .num{color:var(--rust);}
+  .cm .lbl{color:var(--text-dim); font-size:10px; letter-spacing:.03em;}
+
+  /* ---------- SECTIONS ---------- */
+  section{padding:64px 0; border-bottom:1px solid var(--line);}
+  section:last-of-type{border-bottom:none;}
+
+  .part-tag{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    letter-spacing:.1em;
+    color:var(--amber);
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  h2{
+    font-family:'Newsreader', serif;
+    font-weight:500;
+    font-size:27px;
+    margin-bottom:14px;
+    letter-spacing:-0.01em;
+  }
+  p.lead{color:var(--text-dim); font-size:15.5px; max-width:60ch; margin-bottom:28px;}
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:26px 28px;
+    margin-bottom:16px;
+  }
+  .card-head{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:10px;
+  }
+  .card-title{font-size:16px; font-weight:600;}
+  .card p{color:var(--text-dim); font-size:14.5px; margin-bottom:18px;}
+
+  .actions{display:flex; gap:10px; flex-wrap:wrap;}
+  .btn{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12.5px;
+    letter-spacing:.02em;
+    padding:9px 16px;
+    border-radius:4px;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    border:1px solid var(--line);
+    color:var(--text);
+    transition:border-color .15s ease, color .15s ease;
+  }
+  .btn:hover{border-color:var(--teal); color:var(--teal);}
+  .btn.primary{
+    background:var(--teal);
+    color:#0B1119;
+    border-color:var(--teal);
+    font-weight:500;
+  }
+  .btn.primary:hover{background:#63DDD2; color:#0B1119;}
+  .btn.colab{
+    background:var(--surface-2);
+  }
+
+  .embed-frame{
+    width:100%;
+    height:520px;
+    border:1px solid var(--line);
+    border-radius:6px;
+    background:#fff;
+    margin-top:18px;
+  }
+
+  .note{
+    font-size:13px;
+    color:var(--text-dim);
+    border-left:2px solid var(--amber);
+    padding:10px 14px;
+    background:rgba(217,164,65,0.06);
+    margin-top:18px;
+  }
+  .note strong{color:var(--amber); font-weight:500;}
+
+  /* csv preview table */
+  .preview-scroll{overflow-x:auto; margin-top:18px; border:1px solid var(--line); border-radius:6px;}
+  table{
+    border-collapse:collapse;
+    width:100%;
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    white-space:nowrap;
+  }
+  th, td{
+    padding:10px 14px;
+    text-align:left;
+    border-bottom:1px solid var(--line);
+  }
+  thead th{
+    color:var(--text-dim);
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    font-size:10.5px;
+    background:var(--surface-2);
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody td{color:var(--text);}
+  .row-count{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color:var(--text-dim);
+    margin-top:10px;
+  }
+
+  footer{padding:48px 0 80px; color:var(--text-dim); font-size:13px;}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Webinar materials</div>
+    <div class="cm" aria-hidden="true">
+      <div class="tp"><span class="num">94%</span><span class="lbl">accuracy</span></div>
+      <div><span class="num">—</span><span class="lbl">precision</span></div>
+      <div class="fn"><span class="num">0%</span><span class="lbl">recall</span></div>
+      <div><span class="num">—</span><span class="lbl">caught</span></div>
+    </div>
+    <h1 style="margin-top:28px;">The Blind Spots in Fraud Models</h1>
+    <p class="dek">
+      A model can hit 94% accuracy and still catch none of the fraud. This session
+      walks through why that happens, three practical fixes, and what unusual
+      behavior can tell you when there's no labeled fraud at all.
+    </p>
+  </header>
+
+  <!-- SLIDES -->
+  <section id="slides">
+    <div class="part-tag">Materials · Slides</div>
+    <h2>The full deck</h2>
+    <p class="lead">
+      The 27 slides from the live session, covering the imbalance trap, three
+      fixes ranked by how much they cost you, and a second half on catching
+      unusual behavior without a labeled target at all.
+    </p>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">Webinar_The_Blind_Spots_in_Fraud_Models.pptx</div>
+      </div>
+      <p>View the slides below, or download the original file to reuse or edit.</p>
+      <div class="actions">
+        <a class="btn primary" href="slides.pptx" download>Download slides (.pptx)</a>
+        <a class="btn" href="slides.pdf" target="_blank">Open PDF in new tab</a>
+      </div>
+      <embed class="embed-frame" src="slides.pdf" type="application/pdf">
+    </div>
+  </section>
+
+  <!-- NOTEBOOK -->
+  <section id="notebook">
+    <div class="part-tag">Materials · Live demo notebook</div>
+    <h2>Part A &amp; B — the code behind every slide</h2>
+    <p class="lead">
+      29 cells, run in order during the talk, each one keyed to a slide cue.
+      Part A rebuilds the imbalance trap and the three fixes. Part B switches
+      to a dataset with no target variable at all and asks what "unusual"
+      actually means.
+    </p>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">blind_spots_live_demo.ipynb</div>
+      </div>
+      <p>
+        Walk through it fully executed below, download the notebook to run it
+        yourself, or open it live in Colab and follow along in your own copy.
+      </p>
+      <div class="actions">
+        <a class="btn primary" href="demo.ipynb" download>Download notebook (.ipynb)</a>
+        <a class="btn colab" href="#" target="_blank" title="Update this link once the notebook is pushed to GitHub">
+          Open in Colab
+        </a>
+        <a class="btn" href="demo.html" target="_blank">View full walkthrough</a>
+      </div>
+      <div class="note">
+        <strong>Before this goes live:</strong> the Colab link above is a
+        placeholder. Colab opens notebooks from a github.com URL, so once
+        blind_spots_live_demo.ipynb is pushed to your public repo, swap the
+        href for
+        <code>https://colab.research.google.com/github/&lt;user&gt;/&lt;repo&gt;/blob/main/&lt;path&gt;/demo.ipynb</code>.
+      </div>
+      <iframe class="embed-frame" src="demo.html" title="Notebook walkthrough preview"></iframe>
+    </div>
+  </section>
+
+  <!-- DATA -->
+  <section id="data">
+    <div class="part-tag">Materials · Data</div>
+    <h2>The dataset</h2>
+    <p class="lead">
+      A 24,977-row sample of LendingClub loan data, used for the unsupervised
+      outlier detection walkthrough in Part B. No fraud label, which is the
+      whole point of that section.
+    </p>
+    <div class="card">
+      <div class="card-head">
+        <div class="card-title">lendingclub_sample_25000.csv</div>
+      </div>
+      <p>152 columns per loan. Here's a narrow slice of the first rows so you know what you're downloading.</p>
+      <div class="actions">
+        <a class="btn primary" href="lendingclub_sample_25000.csv" download>Download data (.csv, 18 MB)</a>
+      </div>
+      <div class="preview-scroll">
+        <table>
+          <thead>
+            <tr><th>id</th><th>loan_amnt</th><th>term</th><th>int_rate</th><th>grade</th><th>emp_length</th><th>annual_inc</th><th>loan_status</th><th>dti</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>39651438</td><td>32000</td><td>60 months</td><td>10.49</td><td>B</td><td>10+ years</td><td>120000</td><td>Current</td><td>24.05</td></tr>
+            <tr><td>16411620</td><td>9600</td><td>36 months</td><td>12.99</td><td>C</td><td>—</td><td>21900</td><td>Fully Paid</td><td>10.03</td></tr>
+            <tr><td>45122316</td><td>4000</td><td>36 months</td><td>6.68</td><td>A</td><td>4 years</td><td>83000</td><td>Fully Paid</td><td>19.53</td></tr>
+            <tr><td>125356772</td><td>6025</td><td>36 months</td><td>10.91</td><td>B</td><td>10+ years</td><td>52000</td><td>Fully Paid</td><td>9.16</td></tr>
+            <tr><td>128490686</td><td>25000</td><td>60 months</td><td>26.30</td><td>E</td><td>10+ years</td><td>65000</td><td>Current</td><td>36.26</td></tr>
+            <tr><td>88273234</td><td>20000</td><td>36 months</td><td>9.49</td><td>B</td><td>10+ years</td><td>100000</td><td>Fully Paid</td><td>16.43</td></tr>
+            <tr><td>46824999</td><td>1000</td><td>36 months</td><td>8.18</td><td>B</td><td>—</td><td>23000</td><td>Fully Paid</td><td>16.34</td></tr>
+            <tr><td>88725013</td><td>24575</td><td>60 months</td><td>14.49</td><td>C</td><td>5 years</td><td>120000</td><td>Fully Paid</td><td>17.40</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="row-count">24,977 rows total &middot; 152 columns &middot; showing 8 rows, 9 columns</div>
+    </div>
+  </section>
+
+  <footer>
+    Companion materials for the live webinar. Questions about the walkthrough
+    or the dataset can go to the same place you'd normally reach James.
+  </footer>
+</div>
+
+</body>
+</html>
