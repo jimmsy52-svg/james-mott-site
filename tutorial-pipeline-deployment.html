@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pipeline & Deployment Tutorial — James C. Mott, Ph.D.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+<style>
+  :root {
+    --navy:   #0A1628;
+    --cream:  #F4F1EB;
+    --red:    #C0392B;
+    --gold:   #B8860B;
+    --gray:   #64748B;
+    --lgray:  #E8E4DC;
+    --white:  #FFFFFF;
+    --code-bg:#F8F6F2;
+    --green:  #2E7D32;
+    --green-light: #EAF5EA;
+    --purple: #6A0DAD;
+    --purple-light: #F5F0FF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--navy); line-height: 1.7; }
+
+  nav { background: var(--navy); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { color: var(--white); font-family: 'Playfair Display', serif; font-size: 1.1rem; text-decoration: none; }
+  .nav-back { color: #A8B8C8; text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
+  .nav-back:hover { color: var(--white); }
+
+  .hero { background: var(--navy); color: var(--white); padding: 5rem 2rem 4rem; text-align: center; }
+  .hero-tag { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
+  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; margin-bottom: 1.25rem; }
+  .hero h1 em { font-style: italic; color: #C8A8E0; }
+  .hero-sub { font-size: 1.05rem; color: #A8B8C8; max-width: 660px; margin: 0 auto 2rem; font-weight: 300; }
+  .hero-meta { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.82rem; color: #7A8FA0; letter-spacing: 0.05em; }
+
+  .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
+
+  .toc { background: var(--white); border-left: 3px solid var(--purple); border-radius: 0 8px 8px 0; padding: 1.5rem 2rem; margin: 3rem 0 2rem; }
+  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.75rem; }
+  .toc ol { padding-left: 1.2rem; }
+  .toc li { margin: 0.3rem 0; }
+  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
+  .toc a:hover { color: var(--purple); }
+
+  .section { padding: 3rem 0 1rem; }
+  .section-num { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
+  .section h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 1.25rem; line-height: 1.3; }
+  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
+  .section strong { color: var(--navy); }
+
+  .code-block { margin: 1.5rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+  .code-header { background: var(--navy); color: #7A9BB5; font-family: 'Source Code Pro', monospace; font-size: 0.75rem; padding: 0.6rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
+  .copy-btn { background: transparent; border: 1px solid #3A5A7A; color: #7A9BB5; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-family: 'Source Code Pro', monospace; transition: all 0.2s; }
+  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
+  .code-block pre { margin: 0 !important; border-radius: 0 !important; background: var(--code-bg) !important; padding: 1.5rem !important; font-size: 0.87rem !important; line-height: 1.6 !important; overflow-x: auto; }
+  .code-block code { font-family: 'Source Code Pro', monospace !important; }
+
+  .callout { border-left: 3px solid var(--navy); background: var(--white); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; margin: 1.5rem 0; font-size: 0.92rem; }
+  .callout.tip    { border-color: var(--green);  background: var(--green-light); }
+  .callout.warn   { border-color: var(--red);    background: #FDF0F0; }
+  .callout.info   { border-color: var(--gold);   background: #FEFBF0; }
+  .callout.key    { border-color: var(--purple);  background: var(--purple-light); }
+  .callout-label  { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
+  .callout.tip  .callout-label  { color: var(--green); }
+  .callout.warn .callout-label  { color: var(--red); }
+  .callout.info .callout-label  { color: var(--gold); }
+  .callout.key  .callout-label  { color: var(--purple); }
+
+  .output-block { background: #F0F4F0; border: 1px solid #C8D8C8; border-radius: 6px; padding: 1.25rem 1.5rem; font-family: 'Source Code Pro', monospace; font-size: 0.82rem; line-height: 1.8; margin: 1.5rem 0; overflow-x: auto; white-space: pre; }
+  .output-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 0.5rem; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+  .stat-box { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .stat-val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
+  .stat-lbl { font-size: 0.78rem; color: var(--gray); line-height: 1.4; }
+  .stat-val.bad  { color: var(--red); }
+  .stat-val.good { color: var(--green); }
+  .stat-val.purple { color: var(--purple); }
+
+  .divider { border: none; border-top: 1px solid var(--lgray); margin: 2.5rem 0; }
+
+  footer { background: var(--navy); color: #7A8FA0; text-align: center; padding: 2.5rem 1rem; margin-top: 5rem; font-size: 0.85rem; }
+  footer a { color: #A8C4E0; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
+  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+</nav>
+
+<div class="hero">
+  <div class="hero-tag">Tutorial · Python · Deployment · Credit Risk</div>
+  <h1>Your Model Works.<br><em>Can It Ship?</em></h1>
+  <p class="hero-sub">A trained model in a notebook is not a product. Here is how to bundle preprocessing and prediction into a single deployable pipeline, using the same LendingClub dataset as the rest of this series.</p>
+  <div class="hero-meta">
+    <span>🐍 Python Script</span>
+    <span>📊 scikit-learn · joblib</span>
+    <span>📅 2026</span>
+    <span>⏱ ~20 min</span>
+  </div>
+</div>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#problem">The Problem Deployment Solves</a></li>
+      <li><a href="#concept">What a Pipeline Actually Is</a></li>
+      <li><a href="#setup">Setup and Imports</a></li>
+      <li><a href="#data">Load Data and Define Features</a></li>
+      <li><a href="#preprocess">Build the Preprocessing Steps</a></li>
+      <li><a href="#assemble">Assemble the Full Pipeline</a></li>
+      <li><a href="#train">Train and Evaluate</a></li>
+      <li><a href="#tradeoff">The Precision/Recall Tradeoff</a></li>
+      <li><a href="#save">Save the Pipeline for Deployment</a></li>
+      <li><a href="#batch">Scoring Many Applicants at Once</a></li>
+      <li><a href="#api">From Script to API</a></li>
+      <li><a href="#calculator">Try It Yourself: A Live Risk Estimator</a></li>
+      <li><a href="#limitations">Honest Limitations</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <div class="section" id="problem">
+    <div class="section-num">01 — The Problem</div>
+    <h2>The Problem Deployment Solves</h2>
+    <p>Across this series we have built a decision tree, a Random Forest, an XGBoost model, and used SHAP and anomaly detection to explain and audit predictions. Every one of those started and ended in a notebook.</p>
+    <p>That is where most modeling work stops. You get a good AUC, you write up the results, you move on. But a model sitting in a notebook cannot score a new loan application at 2am. It cannot be handed to an engineering team without someone rebuilding half your preprocessing steps from memory. If a model is going to do real work, it has to leave the notebook.</p>
+
+    <div class="callout key">
+      <div class="callout-label">What this tutorial does</div>
+      It bundles the preprocessing and the model into a single scikit-learn Pipeline object, trains and evaluates it, and saves it in a form ready to sit behind an API. Same dataset, same target, new discipline.
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-val purple">72.4%</div>
+        <div class="stat-lbl">Test accuracy</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val purple">0.71</div>
+        <div class="stat-lbl">Test AUC</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val good">51%</div>
+        <div class="stat-lbl">Recall on actual defaults</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">24%</div>
+        <div class="stat-lbl">Precision on flagged defaults</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 2 -->
+  <div class="section" id="concept">
+    <div class="section-num">02 — The Concept</div>
+    <h2>What a Pipeline Actually Is</h2>
+    <p>In scikit-learn, a Pipeline is an object that chains together every transformation your data needs, plus the model itself, into a single unit. Instead of scaling numeric features by hand, encoding categoricals separately, and fitting a classifier as three disconnected steps, you wrap all of it into one object that can be called with a single <code>.fit()</code> and a single <code>.predict()</code>.</p>
+    <p>The reason this matters for deployment has nothing to do with elegance. It is about consistency. If your preprocessing lives in one script and your model lives in another, you are relying on someone to apply the exact same transformations, in the exact same order, every time new data comes in. That works fine until it doesn't. A pipeline removes that risk by making the preprocessing part of the model object itself.</p>
+
+    <div class="callout tip">
+      <div class="callout-label">Key property</div>
+      Whatever is fit inside a Pipeline is saved and reloaded as one object. There is no separate "production version" of the preprocessing to keep in sync with the model.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3 -->
+  <div class="section" id="setup">
+    <div class="section-num">03 — Setup</div>
+    <h2>Setup and Imports</h2>
+    <div class="code-block">
+      <div class="code-header"><span>setup.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">import pandas as pd
+import numpy as np
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import confusion_matrix, roc_auc_score, accuracy_score, classification_report
+import joblib
+
+# Install if needed:
+# pip install scikit-learn pandas numpy joblib</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4 -->
+  <div class="section" id="data">
+    <div class="section-num">04 — Data</div>
+    <h2>Load Data and Define Features</h2>
+    <p>We use the same 25,000-loan LendingClub dataset as the rest of this series. This time the feature set is wider than earlier tutorials: a mix of numeric loan and credit history fields, plus categorical fields that need their own preprocessing path.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>load_data.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">df = pd.read_csv('lendingclub_sample_25000.csv', low_memory=False)
+
+numeric_features = ['loan_amnt', 'int_rate', 'installment', 'annual_inc', 'dti',
+                     'delinq_2yrs', 'open_acc', 'pub_rec', 'revol_bal', 'revol_util', 'total_acc']
+categorical_features = ['term', 'grade', 'home_ownership', 'verification_status', 'purpose']
+
+X = df[numeric_features + categorical_features]
+y = df['bad_loan']
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y)</code></pre>
+    </div>
+
+    <div class="callout info">
+      <div class="callout-label">Why stratify</div>
+      Bad loans make up only about 13% of this dataset. Stratifying the split keeps that same ratio in both the training and test sets, so the evaluation is not skewed by an unlucky split.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5 -->
+  <div class="section" id="preprocess">
+    <div class="section-num">05 — Preprocessing</div>
+    <h2>Build the Preprocessing Steps</h2>
+    <p>Numeric and categorical columns need different treatment, and each treatment is itself a small pipeline. Numeric columns get median imputation and standard scaling. Categorical columns get most-frequent imputation and one-hot encoding.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>preprocessing.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">numeric_transformer = Pipeline([
+    ('imputer', SimpleImputer(strategy='median')),
+    ('scaler', StandardScaler())
+])
+
+categorical_transformer = Pipeline([
+    ('imputer', SimpleImputer(strategy='most_frequent')),
+    ('encoder', OneHotEncoder(handle_unknown='ignore'))
+])
+
+preprocessor = ColumnTransformer([
+    ('num', numeric_transformer, numeric_features),
+    ('cat', categorical_transformer, categorical_features)
+])</code></pre>
+    </div>
+
+    <p><code>ColumnTransformer</code> applies both sets of transformations in parallel, on the columns they actually belong to. Numeric columns never see the encoder, categorical columns never see the scaler.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 6 -->
+  <div class="section" id="assemble">
+    <div class="section-num">06 — Assembly</div>
+    <h2>Assemble the Full Pipeline</h2>
+    <p>The preprocessor and the classifier get combined into a single Pipeline object. From this point forward, training and prediction both happen through one call.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>assemble_pipeline.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">clf_pipeline = Pipeline([
+    ('preprocessor', preprocessor),
+    ('classifier', RandomForestClassifier(
+        n_estimators=300, max_depth=10, class_weight='balanced', random_state=42))
+])
+
+clf_pipeline.fit(X_train, y_train)</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <div class="callout-label">class_weight='balanced'</div>
+      This tells the Random Forest to weight the minority class (defaults) more heavily during training, which matters given defaults make up only 13% of the data. More on the tradeoff this creates in Section 8.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 7 -->
+  <div class="section" id="train">
+    <div class="section-num">07 — Evaluation</div>
+    <h2>Train and Evaluate</h2>
+    <p>The pipeline is evaluated on the 20% held-out test set, exactly as it will run once deployed. No separate preprocessing step, no risk of the evaluation seeing data prepared differently than production data will be.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>evaluate.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">y_pred = clf_pipeline.predict(X_test)
+y_proba = clf_pipeline.predict_proba(X_test)[:, 1]
+
+acc = accuracy_score(y_test, y_pred)
+auc = roc_auc_score(y_test, y_proba)
+cm = confusion_matrix(y_test, y_pred)
+
+print("Accuracy:", round(acc, 4))
+print("AUC:", round(auc, 4))
+print("Confusion matrix:\n", cm)
+print(classification_report(y_test, y_pred))</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Output</span>
+Accuracy: 0.724
+AUC: 0.7079
+Confusion matrix:
+ [[3287 1062]
+ [ 318  333]]
+              precision    recall  f1-score   support
+
+           0       0.91      0.76      0.83      4349
+           1       0.24      0.51      0.33       651
+
+    accuracy                           0.72      5000
+   macro avg       0.58      0.63      0.58      5000
+weighted avg       0.82      0.72      0.76      5000</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 8 -->
+  <div class="section" id="tradeoff">
+    <div class="section-num">08 — The Tradeoff</div>
+    <h2>The Precision/Recall Tradeoff</h2>
+    <p>The headline accuracy number undersells what is actually happening. Of the 651 loans that went bad in the test set, the pipeline correctly flagged 333 of them, a recall of 51%. That comes at a real cost: 1,062 loans that performed fine also got flagged as risky, which is why precision on the bad-loan class sits at just 24%.</p>
+    <p>This is the direct effect of <code>class_weight='balanced'</code> on a dataset where bad loans make up only about 13% of the total. Without that adjustment, the model would learn to mostly predict "good loan" and rack up high accuracy while missing almost every default. With it, the model catches more of the loans worth worrying about, but a human reviewer downstream has to sort through a lot of false alarms to find them.</p>
+
+    <div class="callout key">
+      <div class="callout-label">There is no free lunch here</div>
+      Neither setting is objectively correct. Which one you want depends on what a missed default costs your business compared to what a wasted manual review costs. That tradeoff, not the accuracy number, is the thing worth discussing with whoever owns the lending decision.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 9 -->
+  <div class="section" id="save">
+    <div class="section-num">09 — Save</div>
+    <h2>Save the Pipeline for Deployment</h2>
+    <p>Once you're satisfied with the tradeoff the pipeline represents, save the fitted object with joblib. This preserves both the preprocessing steps and the trained model as one file, so anything that loads it later doesn't need to know what happened inside.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>save_pipeline.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">joblib.dump(clf_pipeline, 'loan_default_pipeline.joblib')
+
+# Later, in a separate process or service:
+# loaded_pipeline = joblib.load('loan_default_pipeline.joblib')
+# loaded_pipeline.predict(new_applicant_df)</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 10 -->
+  <div class="section" id="batch">
+    <div class="section-num">10 — Batch Scoring</div>
+    <h2>Scoring Many Applicants at Once</h2>
+    <p>A call center handling one applicant at a time is one use case. Just as common is a batch: a portfolio review, an overnight risk refresh, or a CSV of new applications that came in overnight and need scoring before the morning shift starts.</p>
+    <p>This is where a Pipeline object earns its keep. The exact same <code>.predict()</code> call used on a single applicant in Section 7 works unchanged on a dataframe with any number of rows. No looping, no rewriting the preprocessing, no special-casing for batch versus single-record scoring.</p>
+
+    <p>Say fifteen new applications came in, saved as a CSV:</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>new_applicants.csv (first 3 rows)</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">applicant_id,loan_amnt,int_rate,installment,annual_inc,dti,delinq_2yrs,open_acc,pub_rec,revol_bal,revol_util,total_acc,term,grade,home_ownership,verification_status,purpose
+A1000,12000,8.34,245.27,90000,18.67,0,11,0,17065,6.43,19, 60 months,A,RENT,Verified,major_purchase
+A1001,20000,11.52,440.05,65000,32.89,0,19,0,38030,25.73,27, 60 months,B,RENT,Not Verified,credit_card
+A1002,12000,10.65,390.88,35000,19.03,0,15,0,19357,37.93,20, 36 months,B,RENT,Source Verified,major_purchase</code></pre>
+    </div>
+
+    <p>Scoring all fifteen takes the same handful of lines as scoring one:</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>batch_score.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">import pandas as pd
+import joblib
+
+pipeline = joblib.load('loan_default_pipeline.joblib')
+
+new_applicants = pd.read_csv('new_applicants.csv')
+
+feature_cols = ['loan_amnt', 'int_rate', 'installment', 'annual_inc', 'dti',
+                 'delinq_2yrs', 'open_acc', 'pub_rec', 'revol_bal', 'revol_util', 'total_acc',
+                 'term', 'grade', 'home_ownership', 'verification_status', 'purpose']
+
+X_new = new_applicants[feature_cols]
+
+predictions = pipeline.predict(X_new)
+probabilities = pipeline.predict_proba(X_new)[:, 1]
+
+results = new_applicants[['applicant_id']].copy()
+results['bad_loan_prediction'] = predictions
+results['default_probability'] = probabilities.round(4)
+results = results.sort_values('default_probability', ascending=False)
+
+print(f"Scored {len(results)} applicants. {predictions.sum()} flagged as likely default.")
+results.to_csv('scored_applicants.csv', index=False)</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Output</span>
+applicant_id  bad_loan_prediction  default_probability
+       A1011                    1               0.6459
+       A1008                    1               0.6235
+       A1007                    1               0.5243
+       A1004                    0               0.4711
+       A1005                    0               0.4460
+       A1003                    0               0.4415
+       A1002                    0               0.4361
+       A1006                    0               0.4197
+       A1014                    0               0.4189
+       A1012                    0               0.4130
+       A1010                    0               0.3619
+       A1001                    0               0.3236
+       A1013                    0               0.3022
+       A1000                    0               0.2213
+       A1009                    0               0.1956
+
+Scored 15 applicants. 3 flagged as likely default.</div>
+
+    <div class="callout tip">
+      <div class="callout-label">Same pipeline, two use cases</div>
+      Nothing about the pipeline object changed between the single-applicant example in Section 7 and this fifteen-applicant batch. That consistency is the entire argument for building it this way: whether it is one call-center inquiry or an overnight portfolio refresh, there is exactly one code path to trust.
+    </div>
+
+    <p>The same idea extends to the API endpoints from the next section: a list-accepting version of either the Flask or FastAPI route below would take a JSON array of applicants instead of one object, run the identical <code>pipeline.predict()</code> call on the resulting dataframe, and return a list of results. The scoring logic does not change, only the shape of what comes in and goes out.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 11 -->
+  <div class="section" id="api">
+    <div class="section-num">11 — Serving</div>
+    <h2>From Script to API</h2>
+    <p>Getting the saved pipeline into production means wrapping it behind an endpoint that accepts new applicant data and returns a prediction. Because the Pipeline object already contains the preprocessing, the API layer only needs to load the joblib file and call <code>.predict()</code> on a raw dataframe. It does not need to reimplement imputation, scaling, or encoding.</p>
+    <p>Below are two minimal, working versions of the same endpoint, one in Flask and one in FastAPI. Both load the pipeline saved in Section 9 and return a prediction plus a default probability for a posted applicant record. Pick whichever fits your stack; the underlying logic is identical.</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>app_flask.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">from flask import Flask, request, jsonify
+import joblib
+import pandas as pd
+
+app = Flask(__name__)
+pipeline = joblib.load('loan_default_pipeline.joblib')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    applicant = request.get_json()
+    X_new = pd.DataFrame([applicant])
+
+    prediction = pipeline.predict(X_new)[0]
+    probability = pipeline.predict_proba(X_new)[0][1]
+
+    return jsonify({
+        'bad_loan_prediction': int(prediction),
+        'default_probability': round(float(probability), 4)
+    })
+
+if __name__ == '__main__':
+    app.run(debug=True, port=5000)</code></pre>
+    </div>
+
+    <p>A posted applicant record like this one:</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>sample_request.json</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">{
+  "loan_amnt": 12000, "int_rate": 14.5, "installment": 415.2, "annual_inc": 52000,
+  "dti": 22.3, "delinq_2yrs": 0, "open_acc": 8, "pub_rec": 0, "revol_bal": 9800,
+  "revol_util": 45.2, "total_acc": 18,
+  "term": " 36 months", "grade": "C", "home_ownership": "RENT",
+  "verification_status": "Verified", "purpose": "debt_consolidation"
+}</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Response</span>
+{
+  "bad_loan_prediction": 1,
+  "default_probability": 0.558
+}</div>
+
+    <p>The FastAPI version does the same thing, but adds request validation with Pydantic and gets automatic interactive API docs for free:</p>
+
+    <div class="code-block">
+      <div class="code-header"><span>app_fastapi.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">from fastapi import FastAPI
+from pydantic import BaseModel
+import joblib
+import pandas as pd
+
+app = FastAPI()
+pipeline = joblib.load('loan_default_pipeline.joblib')
+
+class Applicant(BaseModel):
+    loan_amnt: float
+    int_rate: float
+    installment: float
+    annual_inc: float
+    dti: float
+    delinq_2yrs: int
+    open_acc: int
+    pub_rec: int
+    revol_bal: float
+    revol_util: float
+    total_acc: int
+    term: str
+    grade: str
+    home_ownership: str
+    verification_status: str
+    purpose: str
+
+@app.post('/predict')
+def predict(applicant: Applicant):
+    X_new = pd.DataFrame([applicant.dict()])
+
+    prediction = pipeline.predict(X_new)[0]
+    probability = pipeline.predict_proba(X_new)[0][1]
+
+    return {
+        'bad_loan_prediction': int(prediction),
+        'default_probability': round(float(probability), 4)
+    }</code></pre>
+    </div>
+
+    <p>Run it with <code>uvicorn app_fastapi:app --reload</code> and the same sample request above returns the identical result, since both endpoints are wrapping the exact same saved pipeline.</p>
+
+    <div class="callout tip">
+      <div class="callout-label">Flask vs. FastAPI</div>
+      Flask is simpler and more widely known, which makes it a fine choice for an internal tool or a quick proof of concept. FastAPI's Pydantic validation catches malformed requests before they ever reach the pipeline, and its automatic OpenAPI docs make the endpoint self-documenting for anyone else who needs to call it. For anything beyond a personal script, FastAPI's validation is worth the small extra setup.
+    </div>
+
+    <p><strong>Plan for drift.</strong> A model that performs well today will not perform well forever. Lending standards shift, economic conditions change, and the patterns learned on one year's applicants may not hold for the next. Monitoring for drift and having a retraining plan matters as much as the endpoint itself once this is actually running. For larger scale or managed infrastructure, cloud platforms like AWS SageMaker or Azure ML handle a lot of the deployment and monitoring plumbing for you.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 11 -->
+  <div class="section" id="calculator">
+    <div class="section-num">12 — Try It</div>
+    <h2>Try It Yourself: A Live Risk Estimator</h2>
+    <p>This is the call-center scenario made concrete. Key in an applicant's numbers below and get an instant default risk estimate, computed live in your browser as you submit.</p>
+
+    <div class="callout warn">
+      <div class="callout-label">What this is, and is not</div>
+      This is a browser demo, not the Random Forest pipeline built above. A 300-tree Random Forest cannot practically run in JavaScript, so this calculator uses a separate, simpler logistic regression trained on the same eleven numeric features from the same LendingClub dataset. Its coefficients are embedded directly in this page and computed client-side, with no server call. On the same test set, this logistic regression scores 65.5% accuracy and 0.69 AUC, a bit lower than the Random Forest's 72.4% and 0.71. Treat this as an honest illustration of the concept, not a stand-in for the production pipeline itself.
+    </div>
+
+    <div id="riskCalc" style="background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1.75rem; margin: 1.5rem auto; max-width: 520px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.25rem;">
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Loan amount ($)
+          <input type="number" id="rc_loan_amnt" value="12000" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Interest rate (%)
+          <input type="number" step="0.01" id="rc_int_rate" value="14.5" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Monthly installment ($)
+          <input type="number" step="0.01" id="rc_installment" value="415.20" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Annual income ($)
+          <input type="number" id="rc_annual_inc" value="52000" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Debt-to-income ratio
+          <input type="number" step="0.01" id="rc_dti" value="22.3" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Delinquencies (2 yrs)
+          <input type="number" id="rc_delinq_2yrs" value="0" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Open credit accounts
+          <input type="number" id="rc_open_acc" value="8" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Public records
+          <input type="number" id="rc_pub_rec" value="0" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Revolving balance ($)
+          <input type="number" id="rc_revol_bal" value="9800" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Revolving utilization (%)
+          <input type="number" step="0.01" id="rc_revol_util" value="45.2" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+        <label style="font-size: 0.85rem; color: var(--gray);">Total credit accounts
+          <input type="number" id="rc_total_acc" value="18" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        </label>
+
+      </div>
+
+      <button onclick="calcRisk()" style="margin-top:1.5rem; background: var(--navy); color: var(--white); border:none; padding:0.75rem 1.75rem; border-radius:6px; font-family:'Inter',sans-serif; font-weight:600; font-size:0.9rem; cursor:pointer;">Estimate Default Risk</button>
+
+      <div id="rc_result" style="margin-top:1.5rem; display:none;">
+        <div class="stat-row" style="grid-template-columns: 1fr 1fr;">
+          <div class="stat-box">
+            <div class="stat-val purple" id="rc_prob">—</div>
+            <div class="stat-lbl">Estimated default probability</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-val" id="rc_flag">—</div>
+            <div class="stat-lbl">Flag at 50% threshold</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const RC_MEANS = {loan_amnt: 14957.3525, int_rate: 13.0934, installment: 443.439, annual_inc: 77749.8754,
+        dti: 18.8464, delinq_2yrs: 0.306, open_acc: 11.6638, pub_rec: 0.1984,
+        revol_bal: 16615.81, revol_util: 50.6032, total_acc: 24.1009};
+      const RC_STDS = {loan_amnt: 9173.4034, int_rate: 4.8711, installment: 266.9156, annual_inc: 71684.6826,
+        dti: 16.1101, delinq_2yrs: 0.8603, open_acc: 5.6528, pub_rec: 0.5464,
+        revol_bal: 25053.9206, revol_util: 24.6266, total_acc: 11.8503};
+      const RC_COEFS = {loan_amnt: 0.013221, int_rate: 0.605708, installment: 0.024529, annual_inc: -0.178691,
+        dti: -0.010978, delinq_2yrs: 0.005391, open_acc: 0.056275, pub_rec: 0.059793,
+        revol_bal: -0.161039, revol_util: 0.122003, total_acc: 0.125655};
+      const RC_INTERCEPT = -0.165034;
+
+      function calcRisk() {
+        let z = RC_INTERCEPT;
+        for (const key in RC_MEANS) {
+          const raw = parseFloat(document.getElementById('rc_' + key).value) || 0;
+          const scaled = (raw - RC_MEANS[key]) / RC_STDS[key];
+          z += RC_COEFS[key] * scaled;
+        }
+        const prob = 1 / (1 + Math.exp(-z));
+        const pct = (prob * 100).toFixed(1) + '%';
+
+        document.getElementById('rc_prob').textContent = pct;
+        document.getElementById('rc_prob').className = 'stat-val ' + (prob >= 0.5 ? 'bad' : 'good');
+
+        const flagEl = document.getElementById('rc_flag');
+        flagEl.textContent = prob >= 0.5 ? 'Flagged' : 'Not flagged';
+        flagEl.className = 'stat-val ' + (prob >= 0.5 ? 'bad' : 'good');
+
+        document.getElementById('rc_result').style.display = 'block';
+      }
+    </script>
+
+    <div class="callout info">
+      <div class="callout-label">Try changing the numbers</div>
+      Push interest rate up past 20% or drop annual income below $30,000 and watch the estimate climb. That responsiveness to individual features, not just the final number, is what a call center rep or underwriter is actually using a tool like this for.
+    </div>
+  </div>
+
+  <hr class="divider">
+    <div class="section-num">13 — Limitations</div>
+    <h2>Honest Limitations</h2>
+    <p><strong>This is a script, not infrastructure.</strong> A real production system needs versioning for the saved model file, logging of predictions, authentication on the API, and a rollback plan if a new model version underperforms.</p>
+    <p><strong>class_weight is a blunt instrument.</strong> It shifts the precision/recall tradeoff, but it does not let you target a specific cost ratio between missed defaults and false alarms. A more deliberate approach would tune the classification threshold directly against a business cost function.</p>
+    <p><strong>The model still has to be right.</strong> A clean deployment pipeline does not fix a biased or poorly calibrated model. Deployment is about making sure the thing you evaluated is the thing that runs. It says nothing about whether that thing should be trusted.</p>
+
+    <div class="callout key">
+      <div class="callout-label">Coming next</div>
+      A future tutorial in this series will cover cross-validation with StratifiedKFold and ensemble voting across multiple model types, building on the same evaluation discipline used here.
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- BROWSE LINK -->
+  <div style="text-align:center; padding: 2.5rem 0; border-top: 1px solid var(--lgray); margin-top: 1rem;">
+    <p style="font-size:0.95rem; color: var(--gray);">
+      Browse all tutorials at
+      <a href="https://james-mott.jimmott52.workers.dev/#tutorials"
+         style="color: var(--navy); font-weight:600; text-decoration:none; border-bottom: 1px solid var(--navy);">
+        james-mott.jimmott52.workers.dev/#tutorials
+      </a>
+    </p>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</footer>
+
+<script>
+  hljs.highlightAll();
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
