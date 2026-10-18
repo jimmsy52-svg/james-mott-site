@@ -3,159 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Decision Trees vs. Random Forest Tutorial — James C. Mott, Ph.D.</title>
+<title>Decision Trees vs. Random Forest Tutorial · James C. Mott, Ph.D.</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link rel="stylesheet" href="css/tutorial.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
-<style>
-  :root {
-    --navy:   #0A1628;
-    --cream:  #F4F1EB;
-    --red:    #C0392B;
-    --gold:   #B8860B;
-    --gray:   #64748B;
-    --lgray:  #E8E4DC;
-    --white:  #FFFFFF;
-    --code-bg:#F8F6F2;
-    --green:  #2E7D32;
-    --green-light: #EAF5EA;
-    --amber:  #D97706;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--navy); line-height: 1.7; }
-
-  nav { background: var(--navy); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-  .nav-logo { color: var(--white); font-family: 'Playfair Display', serif; font-size: 1.1rem; text-decoration: none; }
-  .nav-back { color: #A8B8C8; text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
-  .nav-back:hover { color: var(--white); }
-
-  .hero { background: var(--navy); color: var(--white); padding: 5rem 2rem 4rem; text-align: center; }
-  .hero-tag { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
-  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; margin-bottom: 1.25rem; }
-  .hero h1 em { font-style: italic; color: #E87878; }
-  .hero-sub { font-size: 1.05rem; color: #A8B8C8; max-width: 660px; margin: 0 auto 2rem; font-weight: 300; }
-  .hero-meta { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.82rem; color: #7A8FA0; letter-spacing: 0.05em; }
-
-  .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
-
-  .toc { background: var(--white); border-left: 3px solid var(--red); border-radius: 0 8px 8px 0; padding: 1.5rem 2rem; margin: 3rem 0 2rem; }
-  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.75rem; }
-  .toc ol { padding-left: 1.2rem; }
-  .toc li { margin: 0.3rem 0; }
-  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
-  .toc a:hover { color: var(--red); }
-
-  .section { padding: 3rem 0 1rem; }
-  .section-num { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
-  .section h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 1.25rem; line-height: 1.3; }
-  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
-  .section strong { color: var(--navy); }
-
-  .code-block { margin: 1.5rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-  .code-header { background: var(--navy); color: #7A9BB5; font-family: 'Source Code Pro', monospace; font-size: 0.75rem; padding: 0.6rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
-  .copy-btn { background: transparent; border: 1px solid #3A5A7A; color: #7A9BB5; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-family: 'Source Code Pro', monospace; transition: all 0.2s; }
-  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
-  .code-block pre { margin: 0 !important; border-radius: 0 !important; background: var(--code-bg) !important; padding: 1.5rem !important; font-size: 0.87rem !important; line-height: 1.6 !important; overflow-x: auto; }
-  .code-block code { font-family: 'Source Code Pro', monospace !important; }
-
-  .callout { border-left: 3px solid var(--navy); background: var(--white); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; margin: 1.5rem 0; font-size: 0.92rem; }
-  .callout.tip  { border-color: var(--green); background: var(--green-light); }
-  .callout.warn { border-color: var(--red);   background: #FDF0F0; }
-  .callout.info { border-color: var(--gold);  background: #FEFBF0; }
-  .callout.key  { border-color: #6A0DAD;      background: #F5F0FF; }
-  .callout-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
-  .callout.tip  .callout-label { color: var(--green); }
-  .callout.warn .callout-label { color: var(--red); }
-  .callout.info .callout-label { color: var(--gold); }
-  .callout.key  .callout-label { color: #6A0DAD; }
-
-  .output-block { background: #F0F4F0; border: 1px solid #C8D8C8; border-radius: 6px; padding: 1.25rem 1.5rem; font-family: 'Source Code Pro', monospace; font-size: 0.82rem; line-height: 1.8; margin: 1.5rem 0; overflow-x: auto; white-space: pre; }
-  .output-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 0.5rem; }
-
-  /* Confusion matrix table */
-  .cm-section { margin: 2rem 0; }
-  .cm-section h3 { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 1rem; padding: 0.4rem 0.8rem; border-radius: 4px; display: inline-block; }
-  .cm-section h3.dt { background: #FDF0F0; color: var(--red); }
-  .cm-section h3.rf { background: var(--green-light); color: var(--green); }
-  .cm-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 0.75rem; }
-  .cm-box { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-  .cm-box.rf-box { border-color: var(--green); }
-  .cm-title { font-size: 0.8rem; font-weight: 600; color: var(--gray); margin-bottom: 0.75rem; text-align: center; }
-  .cm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 0.6rem; }
-  .cm-cell { padding: 0.5rem; border-radius: 5px; text-align: center; }
-  .cm-cell .val { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; line-height: 1; }
-  .cm-cell .lbl { font-size: 0.7rem; color: var(--gray); margin-top: 2px; }
-  .tn { background: #EAF5EA; } .tn .val { color: var(--green); }
-  .fp { background: #FEFBF0; } .fp .val { color: var(--amber); }
-  .fn { background: #FDF0F0; } .fn .val { color: var(--red); }
-  .tp-bad  { background: #FDF0F0; } .tp-bad .val  { color: var(--red); }
-  .tp-good { background: #EAF5EA; } .tp-good .val { color: var(--green); }
-  .cm-stats { font-size: 0.78rem; color: var(--gray); text-align: center; }
-  .cm-stats .bad  { color: var(--red); font-weight: 600; }
-  .cm-stats .good { color: var(--green); font-weight: 600; }
-
-  /* Stat row */
-  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
-  .stat-box { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-  .stat-val { font-family: 'Playfair Display', serif; font-size: 2.2rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
-  .stat-lbl { font-size: 0.78rem; color: var(--gray); line-height: 1.4; }
-  .stat-val.bad  { color: var(--red); }
-  .stat-val.good { color: var(--green); }
-  .stat-val.warn { color: var(--amber); }
-
-  /* Tree image */
-  .tree-img-wrap { margin: 1.5rem 0; }
-  .tree-img-wrap img { width: 100%; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
-  .tree-img-caption { font-size: 0.83rem; color: var(--gray); line-height: 1.6; margin-top: 0.6rem; font-style: italic; }
-  .tree-img-caption strong { color: var(--navy); font-style: normal; }
-
-  .divider { border: none; border-top: 1px solid var(--lgray); margin: 2.5rem 0; }
-
-  /* Split comparison table */
-  .split-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
-  .split-col { background: var(--white); border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-  .split-col-header { padding: 0.6rem 1rem; font-size: 0.8rem; font-weight: 700; text-align: center; }
-  .split-col-header.before { background: var(--green); color: var(--white); }
-  .split-col-header.after  { background: var(--red);   color: var(--white); }
-  .split-row { padding: 0.55rem 1rem; font-family: 'Source Code Pro', monospace; font-size: 0.82rem; border-bottom: 1px solid var(--lgray); color: var(--navy); }
-  .split-row:last-child { border-bottom: none; }
-  .split-row.changed { background: #FDF0F0; color: var(--red); font-weight: 600; }
-  .split-note { font-size: 0.78rem; color: var(--gray); margin-top: 0.5rem; font-style: italic; }
-
-  .next-section { background: var(--white); border-radius: 10px; padding: 2.5rem; margin: 3rem 0; }
-  .next-section h3 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 0.5rem; }
-  .next-section p { color: var(--gray); font-size: 0.9rem; margin-bottom: 1.5rem; }
-  .tutorial-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-  .tutorial-card { border: 1px solid var(--lgray); border-radius: 8px; padding: 1.25rem; text-decoration: none; color: var(--navy); transition: border-color 0.2s, box-shadow 0.2s; }
-  .tutorial-card:hover { border-color: var(--red); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-  .card-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
-  .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
-  .card-status { font-size: 0.8rem; color: var(--gray); }
-
-  footer { background: var(--navy); color: #7A8FA0; text-align: center; padding: 2.5rem 1rem; margin-top: 5rem; font-size: 0.85rem; }
-  footer a { color: #A8C4E0; text-decoration: none; }
-</style>
 </head>
-<body>
+<body class="tutorial">
 
-<nav>
-  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
-  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+<nav class="nav" aria-label="Main">
+  <a class="nav-brand" href="index.html" aria-label="James C. Mott, home">
+    <img src="img/james-nav.jpg" alt="">
+    <span class="logo"><span class="logo-mark">JC<em>M</em></span><span class="logo-rule"></span><span class="logo-word">James C. Mott</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">About</a>
+    <a href="academy.html">Academy</a>
+    <a href="consulting.html">Consulting</a>
+    <a href="resources.html" aria-current="page">Resources</a>
+  </div>
 </nav>
 
-<div class="hero">
-  <div class="hero-tag">Tutorial · Python · Model Stability · Credit Risk</div>
-  <h1>Your Decision Tree<br><em>Restructured Overnight.</em></h1>
-  <p class="hero-sub">A routine data refresh caused 100% of decision tree splits to change — while a Random Forest barely noticed. Here's why it happens, what to do about it, and how to prove it with real confusion matrices on LendingClub data.</p>
-  <div class="hero-meta">
-    <span>🐍 Python Script</span>
-    <span>📊 scikit-learn · pandas · matplotlib</span>
-    <span>📅 2026</span>
-    <span>⏱ ~25 min</span>
+<main>
+
+<header class="tut-hero">
+  <div class="tut-hero-inner">
+    <a class="tut-back" href="resources.html#tutorials">← All tutorials</a>
+    <div class="hero-tag">Tutorial · Python · Model Stability · Credit Risk</div>
+    <h1>Your Decision Tree<br><em>Restructured Overnight.</em></h1>
+    <p class="hero-sub">A routine data refresh caused 100% of decision tree splits to change, while a Random Forest barely noticed. Here's why it happens, what to do about it, and how to prove it with real confusion matrices on LendingClub data.</p>
+    <div class="hero-meta">
+      <span>Python Script</span>
+      <span>scikit-learn · pandas · matplotlib</span>
+      <span>2026</span>
+      <span>~25 min</span>
+    </div>
   </div>
-</div>
+</header>
 
 <div class="container">
 
@@ -169,19 +57,19 @@
       <li><a href="#tree">Train the Original Decision Tree</a></li>
       <li><a href="#refresh">Simulate a Monthly Data Refresh</a></li>
       <li><a href="#splits">Compare the Splits</a></li>
-      <li><a href="#forest">Random Forest — Why It's Stable</a></li>
+      <li><a href="#forest">Random Forest: Why It's Stable</a></li>
       <li><a href="#stability">Prediction Stability Comparison</a></li>
       <li><a href="#confusion">Confusion Matrix Comparison</a></li>
     </ol>
   </nav>
 
   <!-- SECTION 1 -->
-  <div class="section" id="problem">
-    <div class="section-num">01 — The Problem</div>
+  <div class="tut-section" id="problem">
+    <div class="section-num">01 · The Problem</div>
     <h2>The Stability Problem</h2>
     <p>Your decision tree looks clean. The splits make sense. You can explain every branch to a stakeholder in plain English. Then you update the data. And the entire tree restructures.</p>
-    <p>Same borrowers. Same question. Completely different model. That's not a bug — that's the nature of decision trees. And it's why relying on them alone for prediction is a serious risk in any production environment.</p>
-    <p>In this tutorial we demonstrate this with real LendingClub loan data. We simulate a realistic monthly portfolio refresh — 20% of loans close, 20% new ones arrive — and show exactly what happens to both a decision tree and a Random Forest.</p>
+    <p>Same borrowers. Same question. Completely different model. That's not a bug. That's the nature of decision trees. And it's why relying on them alone for prediction is a serious risk in any production environment.</p>
+    <p>In this tutorial we demonstrate this with real LendingClub loan data. We simulate a realistic monthly portfolio refresh (20% of loans close, 20% new ones arrive) and show exactly what happens to both a decision tree and a Random Forest.</p>
 
     <div class="stat-row">
       <div class="stat-box">
@@ -206,24 +94,24 @@
   <hr class="divider">
 
   <!-- SECTION 2 -->
-  <div class="section" id="concept">
-    <div class="section-num">02 — Key Concept</div>
+  <div class="tut-section" id="concept">
+    <div class="section-num">02 · Key Concept</div>
     <h2>Description vs. Prediction</h2>
     <p>This is the distinction that changes how you think about decision trees entirely:</p>
     <div class="callout key">
       <div class="callout-label">The Core Insight</div>
-      <p><strong>Decision trees are powerful for description</strong> — understanding the splits that define risk right now, at this moment, with this data.</p>
-      <p style="margin-top:0.5rem;"><strong>Decision trees are fragile for prediction</strong> — because the model you deploy today may look nothing like the model you'd build tomorrow after a routine data refresh.</p>
+      <p><strong>Decision trees are powerful for description</strong>: understanding the splits that define risk right now, at this moment, with this data.</p>
+      <p style="margin-top:0.5rem;"><strong>Decision trees are fragile for prediction</strong>, because the model you deploy today may look nothing like the model you'd build tomorrow after a routine data refresh.</p>
     </div>
-    <p>Decision trees are greedy algorithms. At every split they choose the feature that best separates the data at that exact moment. Change a few hundred rows out of 25,000 — a normal monthly data refresh — and the best split at the root node might change entirely. When the root changes, every branch below it changes. The whole tree shifts.</p>
-    <p>Random Forest fixes the fragility by building hundreds of trees, each on a slightly different sample of the data, and averaging their predictions. No single tree dominates. A change in a few hundred rows shifts one or two trees out of five hundred — barely a ripple in the final prediction.</p>
+    <p>Decision trees are greedy algorithms. At every split they choose the feature that best separates the data at that exact moment. Change a few hundred rows out of 25,000 (a normal monthly data refresh) and the best split at the root node might change entirely. When the root changes, every branch below it changes. The whole tree shifts.</p>
+    <p>Random Forest fixes the fragility by building hundreds of trees, each on a slightly different sample of the data, and averaging their predictions. No single tree dominates. A change in a few hundred rows shifts one or two trees out of five hundred, barely a ripple in the final prediction.</p>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 3 -->
-  <div class="section" id="setup">
-    <div class="section-num">03 — Setup</div>
+  <div class="tut-section" id="setup">
+    <div class="section-num">03 · Setup</div>
     <h2>Imports</h2>
     <div class="code-block">
       <div class="code-header"><span>setup.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
@@ -249,10 +137,10 @@ from sklearn.metrics import (
   <hr class="divider">
 
   <!-- SECTION 4 -->
-  <div class="section" id="data">
-    <div class="section-num">04 — Data</div>
+  <div class="tut-section" id="data">
+    <div class="section-num">04 · Data</div>
     <h2>Load the LendingClub Dataset</h2>
-    <p>We use five borrower features from a 25,000-loan LendingClub sample. The target is <code>bad_loan</code> — 1 means the loan defaulted, 0 means it was repaid. The overall bad loan rate is approximately 13%.</p>
+    <p>We use five borrower features from a 25,000-loan LendingClub sample. The target is <code>bad_loan</code>: 1 means the loan defaulted, 0 means it was repaid. The overall bad loan rate is approximately 13%.</p>
     <div class="code-block">
       <div class="code-header"><span>load_data.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <pre><code class="language-python">DATA_PATH = "lendingclub_sample_25000.csv"   # update path if needed
@@ -277,17 +165,17 @@ X_train, X_test, y_train, y_test = train_test_split(
     </div>
     <div class="callout tip">
       <div class="callout-label">Features</div>
-      Interest rate, debt-to-income ratio, FICO score, annual income, and loan amount — five core underwriting variables that capture different dimensions of borrower risk.
+      Interest rate, debt-to-income ratio, FICO score, annual income, and loan amount: five core underwriting variables that capture different dimensions of borrower risk.
     </div>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 5 -->
-  <div class="section" id="tree">
-    <div class="section-num">05 — Original Tree</div>
+  <div class="tut-section" id="tree">
+    <div class="section-num">05 · Original Tree</div>
     <h2>Train the Original Decision Tree</h2>
-    <p>We use <code>max_depth=3</code> to keep the tree shallow enough to read and explain — which is exactly the use case where decision trees shine. Deeper trees become unreadable but are even more sensitive to data changes.</p>
+    <p>We use <code>max_depth=3</code> to keep the tree shallow enough to read and explain, which is exactly the use case where decision trees shine. Deeper trees become unreadable but are even more sensitive to data changes.</p>
     <div class="code-block">
       <div class="code-header"><span>train_tree.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <pre><code class="language-python">dt_original = DecisionTreeClassifier(max_depth=3, random_state=42)
@@ -313,16 +201,16 @@ plt.show()</code></pre>
 |   |--- annual_inc <= 110125.0
 |   |   |--- ...  → class: Good
 |   |   |--- fico_range_high <= 671.5  → class: Good
-|--- int_rate > 16.22  → ...</output-block>
+|--- int_rate > 16.22  → ...</div>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 6 -->
-  <div class="section" id="refresh">
-    <div class="section-num">06 — Data Refresh</div>
+  <div class="tut-section" id="refresh">
+    <div class="section-num">06 · Data Refresh</div>
     <h2>Simulate a Monthly Data Refresh</h2>
-    <p>Every month, loans close or are paid off and new ones are originated. We simulate this realistically: 20% of the training loans are removed and replaced with new ones that have slightly higher interest rates and slightly lower FICO scores — a plausible shift in any rising-rate environment.</p>
+    <p>Every month, loans close or are paid off and new ones are originated. We simulate this realistically: 20% of the training loans are removed and replaced with new ones that have slightly higher interest rates and slightly lower FICO scores, a plausible shift in any rising-rate environment.</p>
     <div class="code-block">
       <div class="code-header"><span>monthly_refresh.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <pre><code class="language-python">np.random.seed(42)
@@ -351,16 +239,16 @@ print(f"Rows changed:           {n_new:,} ({n_new/n:.0%} of portfolio)")</code><
     </div>
     <div class="callout info">
       <div class="callout-label">Why this is realistic</div>
-      A 20% monthly turnover is conservative for most retail loan portfolios. The rate and FICO shifts are small — well within normal market movement. This is not a stress test. It's a routine refresh.
+      A 20% monthly turnover is conservative for most retail loan portfolios. The rate and FICO shifts are small, well within normal market movement. This is not a stress test. It's a routine refresh.
     </div>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 7 -->
-  <div class="section" id="splits">
-    <div class="section-num">07 — Split Comparison</div>
-    <h2>Compare the Splits — Before vs. After</h2>
+  <div class="tut-section" id="splits">
+    <div class="section-num">07 · Split Comparison</div>
+    <h2>Compare the Splits: Before vs. After</h2>
     <p>Now we retrain the decision tree on the updated dataset and compare every split. The results are striking.</p>
     <div class="code-block">
       <div class="code-header"><span>compare_splits.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
@@ -406,27 +294,27 @@ print(f"\n{n_changed} of {len(splits_orig)} splits changed "
     </div>
     <p class="split-note">⚠️ = meaningfully different threshold or completely different feature. The income threshold shifted by $16,825. The bottom-right branch switched from FICO score to loan amount entirely.</p>
 
-    <p>The tree visualization below shows this visually — the same portfolio, the same question, two completely different structures:</p>
+    <p>The tree visualization below shows this visually: the same portfolio, the same question, two completely different structures:</p>
 
     <div class="tree-img-wrap">
       <img src="img/Tree_Comparison.png"
            alt="Side-by-side decision tree comparison showing how the tree restructured after a monthly data refresh">
-      <p class="tree-img-caption"><strong>Figure:</strong> Original tree (left) vs. updated tree after 20% portfolio turnover (right). The bottom-right branch switches from <code>fico_range_high ≤ 671.50</code> to <code>loan_amnt ≤ 6075.0</code> — a completely different feature. The income threshold defining "high income" shifts by $16,825.</p>
+      <p class="tree-img-caption"><strong>Figure:</strong> Original tree (left) vs. updated tree after 20% portfolio turnover (right). The bottom-right branch switches from <code>fico_range_high ≤ 671.50</code> to <code>loan_amnt ≤ 6075.0</code>, a completely different feature. The income threshold defining "high income" shifts by $16,825.</p>
     </div>
 
     <div class="callout warn">
       <div class="callout-label">The consequence</div>
-      If you deployed the original tree in production and updated your data a month later, every borrower near those changed thresholds would receive a different decision — not because their risk changed, but because the model restructured around them.
+      If you deployed the original tree in production and updated your data a month later, every borrower near those changed thresholds would receive a different decision, not because their risk changed, but because the model restructured around them.
     </div>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 8 -->
-  <div class="section" id="forest">
-    <div class="section-num">08 — Random Forest</div>
-    <h2>Random Forest — Why It's Stable</h2>
-    <p>Random Forest builds hundreds of trees, each on a bootstrap sample of the data with a random subset of features at each split. No single tree dominates the final prediction — the model votes.</p>
+  <div class="tut-section" id="forest">
+    <div class="section-num">08 · Random Forest</div>
+    <h2>Random Forest: Why It's Stable</h2>
+    <p>Random Forest builds hundreds of trees, each on a bootstrap sample of the data with a random subset of features at each split. No single tree dominates the final prediction: the model votes.</p>
     <div class="code-block">
       <div class="code-header"><span>random_forest.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <pre><code class="language-python"># Train on original data
@@ -457,17 +345,17 @@ print(importance_df.round(3).to_string(index=False))</code></pre>
     </div>
     <div class="callout tip">
       <div class="callout-label">Why 500 trees?</div>
-      A data refresh that changes 20% of your training data shifts roughly 100 of 500 trees at most — and even those shifts are partial since each tree only sees ~63% of the data via bootstrap sampling. The remaining 400 trees are essentially unaffected. The aggregate prediction barely moves.
+      A data refresh that changes 20% of your training data shifts roughly 100 of 500 trees at most, and even those shifts are partial since each tree only sees ~63% of the data via bootstrap sampling. The remaining 400 trees are essentially unaffected. The aggregate prediction barely moves.
     </div>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 9 -->
-  <div class="section" id="stability">
-    <div class="section-num">09 — Stability</div>
+  <div class="tut-section" id="stability">
+    <div class="section-num">09 · Stability</div>
     <h2>Prediction Stability Comparison</h2>
-    <p>Here's the direct comparison — how many borrowers in the test set received a different prediction after the monthly refresh:</p>
+    <p>Here's the direct comparison: how many borrowers in the test set received a different prediction after the monthly refresh:</p>
     <div class="code-block">
       <div class="code-header"><span>stability.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
       <pre><code class="language-python">dt_pred_orig    = dt_original.predict(X_test)
@@ -492,18 +380,18 @@ Prediction changes after monthly data refresh:
 
 Absolute counts (test set = 4,996 borrowers):
   Decision Tree:  0 flipped
-  Random Forest:  41 flipped</output-block>
+  Random Forest:  41 flipped</div>
     <div class="callout warn">
-      <div class="callout-label">Wait — the tree flipped 0%?</div>
-      Yes — and that's actually the deeper problem. The tree restructured completely (100% of splits changed) but still predicts "good loan" for nearly everyone — catching 0 defaults either way. The instability is structural and hidden. The confusion matrices in the next section show this clearly.
+      <div class="callout-label">Wait. The tree flipped 0%?</div>
+      Yes, and that's actually the deeper problem. The tree restructured completely (100% of splits changed) but still predicts "good loan" for nearly everyone, catching 0 defaults either way. The instability is structural and hidden. The confusion matrices in the next section show this clearly.
     </div>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 10 -->
-  <div class="section" id="confusion">
-    <div class="section-num">10 — Confusion Matrices</div>
+  <div class="tut-section" id="confusion">
+    <div class="section-num">10 · Confusion Matrices</div>
     <h2>Confusion Matrix Comparison</h2>
     <p>The confusion matrices tell the complete story. Same test set. Same 4,996 borrowers. Before vs. after the monthly refresh.</p>
     <div class="code-block">
@@ -554,7 +442,7 @@ show_cm("Updated",  y_test, rf_pred_updated)</code></pre>
       </div>
       <div class="callout warn">
         <div class="callout-label">The hidden problem</div>
-        The decision tree restructured completely — 100% of splits changed — but the confusion matrix is identical. It catches 0 defaults both times. The instability is real and structural, but it's invisible in the accuracy metric. This is exactly why accuracy alone is the wrong metric for imbalanced problems.
+        The decision tree restructured completely (100% of splits changed) but the confusion matrix is identical. It catches 0 defaults both times. The instability is real and structural, but it's invisible in the accuracy metric. This is exactly why accuracy alone is the wrong metric for imbalanced problems.
       </div>
     </div>
 
@@ -584,37 +472,43 @@ show_cm("Updated",  y_test, rf_pred_updated)</code></pre>
       </div>
       <div class="callout tip">
         <div class="callout-label">The key result</div>
-        The Random Forest matrices are nearly identical — FN moved by 1, TP moved by 1, everything else unchanged. Only 41 of 4,996 borrowers received a different prediction. That's the stability you need in a production model.
+        The Random Forest matrices are nearly identical: FN moved by 1, TP moved by 1, everything else unchanged. Only 41 of 4,996 borrowers received a different prediction. That's the stability you need in a production model.
       </div>
     </div>
 
-    <h2 style="font-family:'Playfair Display',serif; margin-top:2.5rem; margin-bottom:1.25rem;">But You Lose Something</h2>
+    <h2 style="margin-top:2.5rem; margin-bottom:1.25rem;">But You Lose Something</h2>
     <p>Random Forest solves the fragility problem. But it costs you the single interpretable tree you could draw on a whiteboard. You gain stability. You lose the ability to explain a specific decision to a credit committee, a regulator, or a borrower who was declined.</p>
     <p>That trade-off is almost always worth making for prediction. But it leaves a real problem unsolved: how do you explain a Random Forest's decision?</p>
     <div class="callout key">
       <div class="callout-label">Coming next</div>
-      That's what <strong>SHAP (SHapley Additive exPlanations)</strong> solves. SHAP gives you feature-level explanations for every individual prediction — telling you not just which features matter overall, but exactly how much each feature pushed a specific borrower's prediction up or down. The next tutorial covers SHAP applied to this same dataset.
+      That's what <strong>SHAP (SHapley Additive exPlanations)</strong> solves. SHAP gives you feature-level explanations for every individual prediction, telling you not just which features matter overall, but exactly how much each feature pushed a specific borrower's prediction up or down. The next tutorial covers SHAP applied to this same dataset.
     </div>
   </div>
 
   <hr class="divider">
 
   
-  <!-- MORE TUTORIALS -->
-  <div style="text-align:center; padding: 2.5rem 0; border-top: 1px solid var(--lgray); margin-top: 1rem;">
-    <p style="font-size:0.95rem; color: var(--gray);">
-      Browse all tutorials at
-      <a href="https://james-mott.jimmott52.workers.dev/#tutorials"
-         style="color: var(--navy); font-weight:600; text-decoration:none; border-bottom: 1px solid var(--navy);">
-        james-mott.jimmott52.workers.dev/#tutorials
-      </a>
-    </p>
+  <!-- BACK TO RESOURCES -->
+  <div class="tut-closing">
+    <p>Browse all tutorials in Resources.</p>
+    <a class="btn btn-outline" href="resources.html#tutorials">Back to Resources →</a>
   </div>
 
 </div>
 
-<footer>
-  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span class="footer-left"><span class="logo-mark">JC<em>M</em></span><span class="footer-copy">© 2026 James C. Mott, Ph.D.</span></span>
+    <div class="footer-links">
+      <a href="index.html">About</a>
+      <a href="academy.html">Academy</a>
+      <a href="consulting.html">Consulting</a>
+      <a href="resources.html">Resources</a>
+      <a href="https://www.linkedin.com/in/JamesCMott" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+    </div>
+  </div>
 </footer>
 
 <script>

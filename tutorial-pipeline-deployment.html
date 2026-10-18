@@ -3,110 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pipeline & Deployment Tutorial — James C. Mott, Ph.D.</title>
+<title>Pipeline & Deployment Tutorial · James C. Mott, Ph.D.</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link rel="stylesheet" href="css/tutorial.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
-<style>
-  :root {
-    --navy:   #0A1628;
-    --cream:  #F4F1EB;
-    --red:    #C0392B;
-    --gold:   #B8860B;
-    --gray:   #64748B;
-    --lgray:  #E8E4DC;
-    --white:  #FFFFFF;
-    --code-bg:#F8F6F2;
-    --green:  #2E7D32;
-    --green-light: #EAF5EA;
-    --purple: #6A0DAD;
-    --purple-light: #F5F0FF;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', sans-serif; background: var(--cream); color: var(--navy); line-height: 1.7; }
-
-  nav { background: var(--navy); padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
-  .nav-logo { color: var(--white); font-family: 'Playfair Display', serif; font-size: 1.1rem; text-decoration: none; }
-  .nav-back { color: #A8B8C8; text-decoration: none; font-size: 0.85rem; font-weight: 500; letter-spacing: 0.05em; text-transform: uppercase; transition: color 0.2s; }
-  .nav-back:hover { color: var(--white); }
-
-  .hero { background: var(--navy); color: var(--white); padding: 5rem 2rem 4rem; text-align: center; }
-  .hero-tag { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 1rem; }
-  .hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.2; margin-bottom: 1.25rem; }
-  .hero h1 em { font-style: italic; color: #C8A8E0; }
-  .hero-sub { font-size: 1.05rem; color: #A8B8C8; max-width: 660px; margin: 0 auto 2rem; font-weight: 300; }
-  .hero-meta { display: flex; justify-content: center; gap: 2rem; flex-wrap: wrap; font-size: 0.82rem; color: #7A8FA0; letter-spacing: 0.05em; }
-
-  .container { max-width: 860px; margin: 0 auto; padding: 0 1.5rem; }
-
-  .toc { background: var(--white); border-left: 3px solid var(--purple); border-radius: 0 8px 8px 0; padding: 1.5rem 2rem; margin: 3rem 0 2rem; }
-  .toc-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gray); margin-bottom: 0.75rem; }
-  .toc ol { padding-left: 1.2rem; }
-  .toc li { margin: 0.3rem 0; }
-  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
-  .toc a:hover { color: var(--purple); }
-
-  .section { padding: 3rem 0 1rem; }
-  .section-num { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.5rem; }
-  .section h2 { font-family: 'Playfair Display', serif; font-size: 1.9rem; margin-bottom: 1.25rem; line-height: 1.3; }
-  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
-  .section strong { color: var(--navy); }
-
-  .code-block { margin: 1.5rem 0; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
-  .code-header { background: var(--navy); color: #7A9BB5; font-family: 'Source Code Pro', monospace; font-size: 0.75rem; padding: 0.6rem 1.2rem; display: flex; justify-content: space-between; align-items: center; }
-  .copy-btn { background: transparent; border: 1px solid #3A5A7A; color: #7A9BB5; font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 4px; cursor: pointer; font-family: 'Source Code Pro', monospace; transition: all 0.2s; }
-  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
-  .code-block pre { margin: 0 !important; border-radius: 0 !important; background: var(--code-bg) !important; padding: 1.5rem !important; font-size: 0.87rem !important; line-height: 1.6 !important; overflow-x: auto; }
-  .code-block code { font-family: 'Source Code Pro', monospace !important; }
-
-  .callout { border-left: 3px solid var(--navy); background: var(--white); padding: 1rem 1.25rem; border-radius: 0 6px 6px 0; margin: 1.5rem 0; font-size: 0.92rem; }
-  .callout.tip    { border-color: var(--green);  background: var(--green-light); }
-  .callout.warn   { border-color: var(--red);    background: #FDF0F0; }
-  .callout.info   { border-color: var(--gold);   background: #FEFBF0; }
-  .callout.key    { border-color: var(--purple);  background: var(--purple-light); }
-  .callout-label  { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.4rem; }
-  .callout.tip  .callout-label  { color: var(--green); }
-  .callout.warn .callout-label  { color: var(--red); }
-  .callout.info .callout-label  { color: var(--gold); }
-  .callout.key  .callout-label  { color: var(--purple); }
-
-  .output-block { background: #F0F4F0; border: 1px solid #C8D8C8; border-radius: 6px; padding: 1.25rem 1.5rem; font-family: 'Source Code Pro', monospace; font-size: 0.82rem; line-height: 1.8; margin: 1.5rem 0; overflow-x: auto; white-space: pre; }
-  .output-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--green); margin-bottom: 0.5rem; }
-
-  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
-  .stat-box { background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1rem; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-  .stat-val { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.3rem; }
-  .stat-lbl { font-size: 0.78rem; color: var(--gray); line-height: 1.4; }
-  .stat-val.bad  { color: var(--red); }
-  .stat-val.good { color: var(--green); }
-  .stat-val.purple { color: var(--purple); }
-
-  .divider { border: none; border-top: 1px solid var(--lgray); margin: 2.5rem 0; }
-
-  footer { background: var(--navy); color: #7A8FA0; text-align: center; padding: 2.5rem 1rem; margin-top: 5rem; font-size: 0.85rem; }
-  footer a { color: #A8C4E0; text-decoration: none; }
-</style>
 </head>
-<body>
+<body class="tutorial">
 
-<nav>
-  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
-  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+<nav class="nav" aria-label="Main">
+  <a class="nav-brand" href="index.html" aria-label="James C. Mott, home">
+    <img src="img/james-nav.jpg" alt="">
+    <span class="logo"><span class="logo-mark">JC<em>M</em></span><span class="logo-rule"></span><span class="logo-word">James C. Mott</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">About</a>
+    <a href="academy.html">Academy</a>
+    <a href="consulting.html">Consulting</a>
+    <a href="resources.html" aria-current="page">Resources</a>
+  </div>
 </nav>
 
-<div class="hero">
-  <div class="hero-tag">Tutorial · Python · Deployment · Credit Risk</div>
-  <h1>Your Model Works.<br><em>Can It Ship?</em></h1>
-  <p class="hero-sub">A trained model in a notebook is not a product. Here is how to bundle preprocessing and prediction into a single deployable pipeline, using the same LendingClub dataset as the rest of this series.</p>
-  <div class="hero-meta">
-    <span>🐍 Python Script</span>
-    <span>📊 scikit-learn · joblib</span>
-    <span>📅 2026</span>
-    <span>⏱ ~20 min</span>
+<main>
+
+<header class="tut-hero">
+  <div class="tut-hero-inner">
+    <a class="tut-back" href="resources.html#tutorials">← All tutorials</a>
+    <div class="hero-tag">Tutorial · Python · Deployment · Credit Risk</div>
+    <h1>Your Model Works.<br><em>Can It Ship?</em></h1>
+    <p class="hero-sub">A trained model in a notebook is not a product. Here is how to bundle preprocessing and prediction into a single deployable pipeline, using the same LendingClub dataset as the rest of this series.</p>
+    <div class="hero-meta">
+      <span>Python Script</span>
+      <span>scikit-learn · joblib</span>
+      <span>2026</span>
+      <span>~20 min</span>
+    </div>
   </div>
-</div>
+</header>
 
 <div class="container">
 
@@ -130,8 +67,8 @@
   </nav>
 
   <!-- SECTION 1 -->
-  <div class="section" id="problem">
-    <div class="section-num">01 — The Problem</div>
+  <div class="tut-section" id="problem">
+    <div class="section-num">01 · The Problem</div>
     <h2>The Problem Deployment Solves</h2>
     <p>Across this series we have built a decision tree, a Random Forest, an XGBoost model, and used SHAP and anomaly detection to explain and audit predictions. Every one of those started and ended in a notebook.</p>
     <p>That is where most modeling work stops. You get a good AUC, you write up the results, you move on. But a model sitting in a notebook cannot score a new loan application at 2am. It cannot be handed to an engineering team without someone rebuilding half your preprocessing steps from memory. If a model is going to do real work, it has to leave the notebook.</p>
@@ -164,8 +101,8 @@
   <hr class="divider">
 
   <!-- SECTION 2 -->
-  <div class="section" id="concept">
-    <div class="section-num">02 — The Concept</div>
+  <div class="tut-section" id="concept">
+    <div class="section-num">02 · The Concept</div>
     <h2>What a Pipeline Actually Is</h2>
     <p>In scikit-learn, a Pipeline is an object that chains together every transformation your data needs, plus the model itself, into a single unit. Instead of scaling numeric features by hand, encoding categoricals separately, and fitting a classifier as three disconnected steps, you wrap all of it into one object that can be called with a single <code>.fit()</code> and a single <code>.predict()</code>.</p>
     <p>The reason this matters for deployment has nothing to do with elegance. It is about consistency. If your preprocessing lives in one script and your model lives in another, you are relying on someone to apply the exact same transformations, in the exact same order, every time new data comes in. That works fine until it doesn't. A pipeline removes that risk by making the preprocessing part of the model object itself.</p>
@@ -179,8 +116,8 @@
   <hr class="divider">
 
   <!-- SECTION 3 -->
-  <div class="section" id="setup">
-    <div class="section-num">03 — Setup</div>
+  <div class="tut-section" id="setup">
+    <div class="section-num">03 · Setup</div>
     <h2>Setup and Imports</h2>
     <div class="code-block">
       <div class="code-header"><span>setup.py</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
@@ -203,8 +140,8 @@ import joblib
   <hr class="divider">
 
   <!-- SECTION 4 -->
-  <div class="section" id="data">
-    <div class="section-num">04 — Data</div>
+  <div class="tut-section" id="data">
+    <div class="section-num">04 · Data</div>
     <h2>Load Data and Define Features</h2>
     <p>We use the same 25,000-loan LendingClub dataset as the rest of this series. This time the feature set is wider than earlier tutorials: a mix of numeric loan and credit history fields, plus categorical fields that need their own preprocessing path.</p>
 
@@ -232,8 +169,8 @@ X_train, X_test, y_train, y_test = train_test_split(
   <hr class="divider">
 
   <!-- SECTION 5 -->
-  <div class="section" id="preprocess">
-    <div class="section-num">05 — Preprocessing</div>
+  <div class="tut-section" id="preprocess">
+    <div class="section-num">05 · Preprocessing</div>
     <h2>Build the Preprocessing Steps</h2>
     <p>Numeric and categorical columns need different treatment, and each treatment is itself a small pipeline. Numeric columns get median imputation and standard scaling. Categorical columns get most-frequent imputation and one-hot encoding.</p>
 
@@ -261,8 +198,8 @@ preprocessor = ColumnTransformer([
   <hr class="divider">
 
   <!-- SECTION 6 -->
-  <div class="section" id="assemble">
-    <div class="section-num">06 — Assembly</div>
+  <div class="tut-section" id="assemble">
+    <div class="section-num">06 · Assembly</div>
     <h2>Assemble the Full Pipeline</h2>
     <p>The preprocessor and the classifier get combined into a single Pipeline object. From this point forward, training and prediction both happen through one call.</p>
 
@@ -286,8 +223,8 @@ clf_pipeline.fit(X_train, y_train)</code></pre>
   <hr class="divider">
 
   <!-- SECTION 7 -->
-  <div class="section" id="train">
-    <div class="section-num">07 — Evaluation</div>
+  <div class="tut-section" id="train">
+    <div class="section-num">07 · Evaluation</div>
     <h2>Train and Evaluate</h2>
     <p>The pipeline is evaluated on the 20% held-out test set, exactly as it will run once deployed. No separate preprocessing step, no risk of the evaluation seeing data prepared differently than production data will be.</p>
 
@@ -325,8 +262,8 @@ weighted avg       0.82      0.72      0.76      5000</div>
   <hr class="divider">
 
   <!-- SECTION 8 -->
-  <div class="section" id="tradeoff">
-    <div class="section-num">08 — The Tradeoff</div>
+  <div class="tut-section" id="tradeoff">
+    <div class="section-num">08 · The Tradeoff</div>
     <h2>The Precision/Recall Tradeoff</h2>
     <p>The headline accuracy number undersells what is actually happening. Of the 651 loans that went bad in the test set, the pipeline correctly flagged 333 of them, a recall of 51%. That comes at a real cost: 1,062 loans that performed fine also got flagged as risky, which is why precision on the bad-loan class sits at just 24%.</p>
     <p>This is the direct effect of <code>class_weight='balanced'</code> on a dataset where bad loans make up only about 13% of the total. Without that adjustment, the model would learn to mostly predict "good loan" and rack up high accuracy while missing almost every default. With it, the model catches more of the loans worth worrying about, but a human reviewer downstream has to sort through a lot of false alarms to find them.</p>
@@ -340,8 +277,8 @@ weighted avg       0.82      0.72      0.76      5000</div>
   <hr class="divider">
 
   <!-- SECTION 9 -->
-  <div class="section" id="save">
-    <div class="section-num">09 — Save</div>
+  <div class="tut-section" id="save">
+    <div class="section-num">09 · Save</div>
     <h2>Save the Pipeline for Deployment</h2>
     <p>Once you're satisfied with the tradeoff the pipeline represents, save the fitted object with joblib. This preserves both the preprocessing steps and the trained model as one file, so anything that loads it later doesn't need to know what happened inside.</p>
 
@@ -358,8 +295,8 @@ weighted avg       0.82      0.72      0.76      5000</div>
   <hr class="divider">
 
   <!-- SECTION 10 -->
-  <div class="section" id="batch">
-    <div class="section-num">10 — Batch Scoring</div>
+  <div class="tut-section" id="batch">
+    <div class="section-num">10 · Batch Scoring</div>
     <h2>Scoring Many Applicants at Once</h2>
     <p>A call center handling one applicant at a time is one use case. Just as common is a batch: a portfolio review, an overnight risk refresh, or a CSV of new applications that came in overnight and need scoring before the morning shift starts.</p>
     <p>This is where a Pipeline object earns its keep. The exact same <code>.predict()</code> call used on a single applicant in Section 7 works unchanged on a dataframe with any number of rows. No looping, no rewriting the preprocessing, no special-casing for batch versus single-record scoring.</p>
@@ -434,8 +371,8 @@ Scored 15 applicants. 3 flagged as likely default.</div>
   <hr class="divider">
 
   <!-- SECTION 11 -->
-  <div class="section" id="api">
-    <div class="section-num">11 — Serving</div>
+  <div class="tut-section" id="api">
+    <div class="section-num">11 · Serving</div>
     <h2>From Script to API</h2>
     <p>Getting the saved pipeline into production means wrapping it behind an endpoint that accepts new applicant data and returns a prediction. Because the Pipeline object already contains the preprocessing, the API layer only needs to load the joblib file and call <code>.predict()</code> on a raw dataframe. It does not need to reimplement imputation, scaling, or encoding.</p>
     <p>Below are two minimal, working versions of the same endpoint, one in Flask and one in FastAPI. Both load the pipeline saved in Section 9 and return a prediction plus a default probability for a posted applicant record. Pick whichever fits your stack; the underlying logic is identical.</p>
@@ -541,8 +478,8 @@ def predict(applicant: Applicant):
   <hr class="divider">
 
   <!-- SECTION 11 -->
-  <div class="section" id="calculator">
-    <div class="section-num">12 — Try It</div>
+  <div class="tut-section" id="calculator">
+    <div class="section-num">12 · Try It</div>
     <h2>Try It Yourself: A Live Risk Estimator</h2>
     <p>This is the call-center scenario made concrete. Key in an applicant's numbers below and get an instant default risk estimate, computed live in your browser as you submit.</p>
 
@@ -551,58 +488,58 @@ def predict(applicant: Applicant):
       This is a browser demo, not the Random Forest pipeline built above. A 300-tree Random Forest cannot practically run in JavaScript, so this calculator uses a separate, simpler logistic regression trained on the same eleven numeric features from the same LendingClub dataset. Its coefficients are embedded directly in this page and computed client-side, with no server call. On the same test set, this logistic regression scores 65.5% accuracy and 0.69 AUC, a bit lower than the Random Forest's 72.4% and 0.71. Treat this as an honest illustration of the concept, not a stand-in for the production pipeline itself.
     </div>
 
-    <div id="riskCalc" style="background: var(--white); border: 1px solid var(--lgray); border-radius: 8px; padding: 1.75rem; margin: 1.5rem auto; max-width: 520px; box-shadow: 0 2px 12px rgba(0,0,0,0.06);">
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.25rem;">
+    <div id="riskCalc" class="risk-calc">
+      <div class="risk-grid">
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Loan amount ($)
-          <input type="number" id="rc_loan_amnt" value="12000" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Loan amount ($)
+          <input type="number" id="rc_loan_amnt" value="12000">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Interest rate (%)
-          <input type="number" step="0.01" id="rc_int_rate" value="14.5" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Interest rate (%)
+          <input type="number" step="0.01" id="rc_int_rate" value="14.5">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Monthly installment ($)
-          <input type="number" step="0.01" id="rc_installment" value="415.20" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Monthly installment ($)
+          <input type="number" step="0.01" id="rc_installment" value="415.20">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Annual income ($)
-          <input type="number" id="rc_annual_inc" value="52000" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Annual income ($)
+          <input type="number" id="rc_annual_inc" value="52000">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Debt-to-income ratio
-          <input type="number" step="0.01" id="rc_dti" value="22.3" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Debt-to-income ratio
+          <input type="number" step="0.01" id="rc_dti" value="22.3">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Delinquencies (2 yrs)
-          <input type="number" id="rc_delinq_2yrs" value="0" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Delinquencies (2 yrs)
+          <input type="number" id="rc_delinq_2yrs" value="0">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Open credit accounts
-          <input type="number" id="rc_open_acc" value="8" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Open credit accounts
+          <input type="number" id="rc_open_acc" value="8">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Public records
-          <input type="number" id="rc_pub_rec" value="0" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Public records
+          <input type="number" id="rc_pub_rec" value="0">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Revolving balance ($)
-          <input type="number" id="rc_revol_bal" value="9800" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Revolving balance ($)
+          <input type="number" id="rc_revol_bal" value="9800">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Revolving utilization (%)
-          <input type="number" step="0.01" id="rc_revol_util" value="45.2" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Revolving utilization (%)
+          <input type="number" step="0.01" id="rc_revol_util" value="45.2">
         </label>
 
-        <label style="font-size: 0.85rem; color: var(--gray);">Total credit accounts
-          <input type="number" id="rc_total_acc" value="18" style="width:100%; padding:0.5rem; margin-top:0.3rem; border:1px solid var(--lgray); border-radius:4px; font-family:'Inter',sans-serif;">
+        <label>Total credit accounts
+          <input type="number" id="rc_total_acc" value="18">
         </label>
 
       </div>
 
-      <button onclick="calcRisk()" style="margin-top:1.5rem; background: var(--navy); color: var(--white); border:none; padding:0.75rem 1.75rem; border-radius:6px; font-family:'Inter',sans-serif; font-weight:600; font-size:0.9rem; cursor:pointer;">Estimate Default Risk</button>
+      <button class="btn btn-primary" onclick="calcRisk()">Estimate Default Risk</button>
 
-      <div id="rc_result" style="margin-top:1.5rem; display:none;">
+      <div id="rc_result" class="risk-result" style="display:none;">
         <div class="stat-row" style="grid-template-columns: 1fr 1fr;">
           <div class="stat-box">
             <div class="stat-val purple" id="rc_prob">—</div>
@@ -656,7 +593,10 @@ def predict(applicant: Applicant):
   </div>
 
   <hr class="divider">
-    <div class="section-num">13 — Limitations</div>
+
+  <!-- SECTION 13 -->
+  <div class="tut-section" id="limitations">
+    <div class="section-num">13 · Limitations</div>
     <h2>Honest Limitations</h2>
     <p><strong>This is a script, not infrastructure.</strong> A real production system needs versioning for the saved model file, logging of predictions, authentication on the API, and a rollback plan if a new model version underperforms.</p>
     <p><strong>class_weight is a blunt instrument.</strong> It shifts the precision/recall tradeoff, but it does not let you target a specific cost ratio between missed defaults and false alarms. A more deliberate approach would tune the classification threshold directly against a business cost function.</p>
@@ -670,21 +610,27 @@ def predict(applicant: Applicant):
 
   <hr class="divider">
 
-  <!-- BROWSE LINK -->
-  <div style="text-align:center; padding: 2.5rem 0; border-top: 1px solid var(--lgray); margin-top: 1rem;">
-    <p style="font-size:0.95rem; color: var(--gray);">
-      Browse all tutorials at
-      <a href="https://james-mott.jimmott52.workers.dev/#tutorials"
-         style="color: var(--navy); font-weight:600; text-decoration:none; border-bottom: 1px solid var(--navy);">
-        james-mott.jimmott52.workers.dev/#tutorials
-      </a>
-    </p>
+  <!-- BACK TO RESOURCES -->
+  <div class="tut-closing">
+    <p>Browse all tutorials in Resources.</p>
+    <a class="btn btn-outline" href="resources.html#tutorials">Back to Resources →</a>
   </div>
 
 </div>
 
-<footer>
-  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span class="footer-left"><span class="logo-mark">JC<em>M</em></span><span class="footer-copy">© 2026 James C. Mott, Ph.D.</span></span>
+    <div class="footer-links">
+      <a href="index.html">About</a>
+      <a href="academy.html">Academy</a>
+      <a href="consulting.html">Consulting</a>
+      <a href="resources.html">Resources</a>
+      <a href="https://www.linkedin.com/in/JamesCMott" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+    </div>
+  </div>
 </footer>
 
 <script>

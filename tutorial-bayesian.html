@@ -3,298 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bayesian Analysis Tutorial — James C. Mott, Ph.D.</title>
+<title>Bayesian Analysis Tutorial · James C. Mott, Ph.D.</title>
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Code+Pro:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/site.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link rel="stylesheet" href="css/tutorial.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
-<style>
-  :root {
-    --navy:   #0A1628;
-    --cream:  #F4F1EB;
-    --red:    #C0392B;
-    --gold:   #B8860B;
-    --gray:   #64748B;
-    --lgray:  #E8E4DC;
-    --white:  #FFFFFF;
-    --code-bg:#F8F6F2;
-  }
-
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: 'Inter', sans-serif;
-    background: var(--cream);
-    color: var(--navy);
-    line-height: 1.7;
-  }
-
-  /* ── NAV ── */
-  nav {
-    background: var(--navy);
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  .nav-logo {
-    color: var(--white);
-    font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
-    text-decoration: none;
-  }
-  .nav-back {
-    color: var(--lgray);
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    transition: color 0.2s;
-  }
-  .nav-back:hover { color: var(--white); }
-
-  /* ── HERO ── */
-  .hero {
-    background: var(--navy);
-    color: var(--white);
-    padding: 5rem 2rem 4rem;
-    text-align: center;
-  }
-  .hero-tag {
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 1rem;
-  }
-  .hero h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(2rem, 5vw, 3.5rem);
-    line-height: 1.2;
-    margin-bottom: 1.25rem;
-  }
-  .hero h1 em { font-style: italic; color: #A8C4E0; }
-  .hero-sub {
-    font-size: 1.05rem;
-    color: #A8B8C8;
-    max-width: 600px;
-    margin: 0 auto 2rem;
-    font-weight: 300;
-  }
-  .hero-meta {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-    font-size: 0.82rem;
-    color: #7A8FA0;
-    letter-spacing: 0.05em;
-  }
-  .hero-meta span { display: flex; align-items: center; gap: 0.4rem; }
-
-  /* ── LAYOUT ── */
-  .container {
-    max-width: 860px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-
-  /* ── TOC ── */
-  .toc {
-    background: var(--white);
-    border-left: 3px solid var(--navy);
-    border-radius: 0 8px 8px 0;
-    padding: 1.5rem 2rem;
-    margin: 3rem 0 2rem;
-  }
-  .toc-title {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--gray);
-    margin-bottom: 0.75rem;
-  }
-  .toc ol { padding-left: 1.2rem; }
-  .toc li { margin: 0.3rem 0; }
-  .toc a { color: var(--navy); text-decoration: none; font-size: 0.9rem; font-weight: 500; }
-  .toc a:hover { color: var(--red); }
-
-  /* ── SECTIONS ── */
-  .section { padding: 3rem 0 1rem; }
-  .section-num {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 0.5rem;
-  }
-  .section h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.9rem;
-    margin-bottom: 1.25rem;
-    line-height: 1.3;
-  }
-  .section p { margin-bottom: 1rem; font-size: 0.97rem; color: #2A3A4A; }
-
-  /* ── CODE BLOCKS ── */
-  .code-block {
-    margin: 1.5rem 0;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
-  }
-  .code-header {
-    background: var(--navy);
-    color: #7A9BB5;
-    font-family: 'Source Code Pro', monospace;
-    font-size: 0.75rem;
-    padding: 0.6rem 1.2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    letter-spacing: 0.05em;
-  }
-  .copy-btn {
-    background: transparent;
-    border: 1px solid #3A5A7A;
-    color: #7A9BB5;
-    font-size: 0.7rem;
-    padding: 0.2rem 0.6rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: 'Source Code Pro', monospace;
-    transition: all 0.2s;
-  }
-  .copy-btn:hover { background: #1A3A5A; color: var(--white); }
-  .code-block pre {
-    margin: 0 !important;
-    border-radius: 0 !important;
-    background: var(--code-bg) !important;
-    padding: 1.5rem !important;
-    font-size: 0.87rem !important;
-    line-height: 1.6 !important;
-    overflow-x: auto;
-  }
-  .code-block code { font-family: 'Source Code Pro', monospace !important; }
-
-  /* ── CALLOUT BOXES ── */
-  .callout {
-    border-left: 3px solid var(--navy);
-    background: var(--white);
-    padding: 1rem 1.25rem;
-    border-radius: 0 6px 6px 0;
-    margin: 1.5rem 0;
-    font-size: 0.92rem;
-  }
-  .callout.tip  { border-color: #2E7D32; background: #F1F8F1; }
-  .callout.warn { border-color: var(--gold); background: #FEFBF0; }
-  .callout-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 0.4rem;
-    color: var(--gray);
-  }
-  .callout.tip  .callout-label { color: #2E7D32; }
-  .callout.warn .callout-label { color: var(--gold); }
-
-  /* ── OUTPUT TABLE ── */
-  .output-block {
-    background: #F0F4F0;
-    border: 1px solid #C8D8C8;
-    border-radius: 6px;
-    padding: 1.25rem 1.5rem;
-    font-family: 'Source Code Pro', monospace;
-    font-size: 0.82rem;
-    line-height: 1.8;
-    margin: 1.5rem 0;
-    overflow-x: auto;
-    white-space: pre;
-  }
-  .output-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: #2E7D32;
-    margin-bottom: 0.5rem;
-  }
-
-  /* ── DIVIDER ── */
-  .divider {
-    border: none;
-    border-top: 1px solid var(--lgray);
-    margin: 2.5rem 0;
-  }
-
-  /* ── FOOTER ── */
-  footer {
-    background: var(--navy);
-    color: #7A8FA0;
-    text-align: center;
-    padding: 2.5rem 1rem;
-    margin-top: 5rem;
-    font-size: 0.85rem;
-  }
-  footer a { color: #A8C4E0; text-decoration: none; }
-
-  /* ── NEXT TUTORIALS ── */
-  .next-section {
-    background: var(--white);
-    border-radius: 10px;
-    padding: 2.5rem;
-    margin: 3rem 0;
-  }
-  .next-section h3 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.4rem;
-    margin-bottom: 0.5rem;
-    color: var(--navy);
-  }
-  .next-section p { color: var(--gray); font-size: 0.9rem; margin-bottom: 1.5rem; }
-  .tutorial-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; }
-  .tutorial-card {
-    border: 1px solid var(--lgray);
-    border-radius: 8px;
-    padding: 1.25rem;
-    text-decoration: none;
-    color: var(--navy);
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .tutorial-card:hover { border-color: var(--navy); box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
-  .card-tag { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.4rem; }
-  .card-title { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.3rem; }
-  .card-status { font-size: 0.8rem; color: var(--gray); }
-  .card-status.coming { color: #B0B8C0; font-style: italic; }
-</style>
 </head>
-<body>
+<body class="tutorial">
 
-<nav>
-  <a class="nav-logo" href="https://james-mott.jimmott52.workers.dev/">James C. Mott, Ph.D.</a>
-  <a class="nav-back" href="https://james-mott.jimmott52.workers.dev/#tutorials">← Tutorials</a>
+<nav class="nav" aria-label="Main">
+  <a class="nav-brand" href="index.html" aria-label="James C. Mott, home">
+    <img src="img/james-nav.jpg" alt="">
+    <span class="logo"><span class="logo-mark">JC<em>M</em></span><span class="logo-rule"></span><span class="logo-word">James C. Mott</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">About</a>
+    <a href="academy.html">Academy</a>
+    <a href="consulting.html">Consulting</a>
+    <a href="resources.html" aria-current="page">Resources</a>
+  </div>
 </nav>
 
-<div class="hero">
-  <div class="hero-tag">Tutorial · Python · Probabilistic Reasoning</div>
-  <h1>An Introduction to<br><em>Bayesian Analysis</em></h1>
-  <p class="hero-sub">How to set a prior, incorporate new evidence, and predict loan default risk using a Bayesian Network — with real code you can run today.</p>
-  <div class="hero-meta">
-    <span>📓 Jupyter Notebook</span>
-    <span>🐍 Python · pgmpy · scikit-learn</span>
-    <span>📅 2026</span>
-    <span>⏱ ~20 min</span>
+<main>
+
+<header class="tut-hero">
+  <div class="tut-hero-inner">
+    <a class="tut-back" href="resources.html#tutorials">← All tutorials</a>
+    <div class="hero-tag">Tutorial · Python · Probabilistic Reasoning</div>
+    <h1>An Introduction to<br><em>Bayesian Analysis</em></h1>
+    <p class="hero-sub">How to set a prior, incorporate new evidence, and predict loan default risk using a Bayesian Network, with real code you can run today.</p>
+    <div class="hero-meta">
+      <span>Jupyter Notebook</span>
+      <span>Python · pgmpy · scikit-learn</span>
+      <span>2026</span>
+      <span>~20 min</span>
+    </div>
   </div>
-</div>
+</header>
 
 <div class="container">
 
@@ -313,11 +62,11 @@
   </nav>
 
   <!-- SECTION 1 -->
-  <div class="section" id="overview">
-    <div class="section-num">01 — Overview</div>
+  <div class="tut-section" id="overview">
+    <div class="section-num">01 · Overview</div>
     <h2>What You'll Learn</h2>
-    <p>Bayesian analysis lets you reason about uncertainty in a principled way — starting from a prior belief, then updating that belief as new evidence arrives. In this tutorial, we apply that idea to a real problem: <strong>predicting the probability that a loan will default</strong> given what we know about the borrower.</p>
-    <p>We build a <strong>Bayesian Network</strong> using three features from a LendingClub-style dataset — interest rate, debt-to-income ratio, and FICO score — and use it to compute the posterior probability of default across all 27 possible combinations of those features.</p>
+    <p>Bayesian analysis lets you reason about uncertainty in a principled way, starting from a prior belief, then updating that belief as new evidence arrives. In this tutorial, we apply that idea to a real problem: <strong>predicting the probability that a loan will default</strong> given what we know about the borrower.</p>
+    <p>We build a <strong>Bayesian Network</strong> using three features from a LendingClub-style dataset (interest rate, debt-to-income ratio, and FICO score) and use it to compute the posterior probability of default across all 27 possible combinations of those features.</p>
     <div class="callout tip">
       <div class="callout-label">What you need</div>
       A loan dataset with columns: <code>int_rate</code>, <code>dti</code>, <code>fico_range_high</code>, <code>bad_loan</code>. The code runs in Jupyter, Google Colab, or Spyder.
@@ -327,8 +76,8 @@
   <hr class="divider">
 
   <!-- SECTION 2 -->
-  <div class="section" id="setup">
-    <div class="section-num">02 — Setup</div>
+  <div class="tut-section" id="setup">
+    <div class="section-num">02 · Setup</div>
     <h2>Imports & Installation</h2>
     <p>Install <code>pgmpy</code> if you haven't already, then import everything we need.</p>
 
@@ -352,17 +101,17 @@ from pgmpy.inference import VariableElimination</code></pre>
 
     <div class="callout warn">
       <div class="callout-label">Note</div>
-      Use <code>DiscreteBayesianNetwork</code> (not <code>BayesianNetwork</code>) — it's the current recommended class in pgmpy. The older name still works but triggers deprecation warnings.
+      Use <code>DiscreteBayesianNetwork</code> (not <code>BayesianNetwork</code>). It's the current recommended class in pgmpy. The older name still works but triggers deprecation warnings.
     </div>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 3 -->
-  <div class="section" id="data">
-    <div class="section-num">03 — Data</div>
+  <div class="tut-section" id="data">
+    <div class="section-num">03 · Data</div>
     <h2>Load & Prepare the Dataset</h2>
-    <p>We select the four columns we need and drop any rows with missing values. The <code>bad_loan</code> column is our target — 1 means the loan defaulted, 0 means it was repaid.</p>
+    <p>We select the four columns we need and drop any rows with missing values. The <code>bad_loan</code> column is our target: 1 means the loan defaulted, 0 means it was repaid.</p>
 
     <div class="code-block">
       <div class="code-header">
@@ -385,10 +134,10 @@ print(f"Overall default rate: {df['bad_loan'].mean():.1%}")</code></pre>
   <hr class="divider">
 
   <!-- SECTION 4 -->
-  <div class="section" id="discretize">
-    <div class="section-num">04 — Preprocessing</div>
+  <div class="tut-section" id="discretize">
+    <div class="section-num">04 · Preprocessing</div>
     <h2>Discretize Features into Bins</h2>
-    <p>Bayesian Networks work with discrete variables. We convert our three continuous features into three bins each — Low, Medium, High — using quantile-based binning so each bin has roughly the same number of observations.</p>
+    <p>Bayesian Networks work with discrete variables. We convert our three continuous features into three bins each (Low, Medium, High) using quantile-based binning so each bin has roughly the same number of observations.</p>
 
     <div class="code-block">
       <div class="code-header">
@@ -412,15 +161,15 @@ df['bad_loan']   = df['bad_loan'].astype(int)
 
     <div class="callout tip">
       <div class="callout-label">Why quantile binning?</div>
-      Quantile binning ensures each bin contains roughly equal numbers of observations — important for reliable probability estimates. Equal-width binning can leave some bins nearly empty when data is skewed.
+      Quantile binning ensures each bin contains roughly equal numbers of observations, important for reliable probability estimates. Equal-width binning can leave some bins nearly empty when data is skewed.
     </div>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 5 -->
-  <div class="section" id="network">
-    <div class="section-num">05 — Model</div>
+  <div class="tut-section" id="network">
+    <div class="section-num">05 · Model</div>
     <h2>Define the Bayesian Network</h2>
     <p>We define the graph structure: each of our three features has a directed edge to <code>bad_loan</code>. This encodes our prior belief that interest rate, DTI, and FICO score each independently influence default risk. We then fit the model using a Bayesian Estimator with a BDeu prior (Bayesian Dirichlet equivalent uniform), which handles small sample sizes gracefully.</p>
 
@@ -455,10 +204,10 @@ inference = VariableElimination(model)</code></pre>
   <hr class="divider">
 
   <!-- SECTION 6 -->
-  <div class="section" id="inference">
-    <div class="section-num">06 — Inference</div>
+  <div class="tut-section" id="inference">
+    <div class="section-num">06 · Inference</div>
     <h2>Query the Model</h2>
-    <p>Now we can ask the model: <em>"Given a borrower with high interest rate, high DTI, and low FICO score — what is the probability of default?"</em> This is the posterior probability after updating our prior with the evidence.</p>
+    <p>Now we can ask the model: <em>"Given a borrower with high interest rate, high DTI, and low FICO score, what is the probability of default?"</em> This is the posterior probability after updating our prior with the evidence.</p>
 
     <div class="code-block">
       <div class="code-header">
@@ -488,14 +237,14 @@ print(query)
 | bad_loan(1) |          0.6759  |
 +-------------+------------------+</div>
 
-    <p>The model estimates a ~68% probability of default for this high-risk profile — substantially above the baseline default rate in the dataset.</p>
+    <p>The model estimates a ~68% probability of default for this high-risk profile, substantially above the baseline default rate in the dataset.</p>
   </div>
 
   <hr class="divider">
 
   <!-- SECTION 7 -->
-  <div class="section" id="grid">
-    <div class="section-num">07 — Grid Search</div>
+  <div class="tut-section" id="grid">
+    <div class="section-num">07 · Grid Search</div>
     <h2>Loop Through All 27 Combinations</h2>
     <p>Rather than querying one profile at a time, we iterate through all 3×3×3 = 27 combinations of feature values and compute the default probability for each. This gives us a complete risk grid.</p>
 
@@ -539,10 +288,10 @@ df_results = df_results.round(3)
   <hr class="divider">
 
   <!-- SECTION 8 -->
-  <div class="section" id="results">
-    <div class="section-num">08 — Results</div>
+  <div class="tut-section" id="results">
+    <div class="section-num">08 · Results</div>
     <h2>Interpret the Risk Grid</h2>
-    <p>Sort the results to surface the highest-risk borrower profiles. The table below shows what the model output looks like — your exact numbers will vary based on your dataset.</p>
+    <p>Sort the results to surface the highest-risk borrower profiles. The table below shows what the model output looks like. Your exact numbers will vary based on your dataset.</p>
 
     <div class="code-block">
       <div class="code-header">
@@ -572,28 +321,34 @@ int_rate     dti  fico_range_high  P(bad_loan)
 
     <div class="callout tip">
       <div class="callout-label">Key Insight</div>
-      The highest-risk profile (High rate · High DTI · Low FICO) has nearly <strong>5× the default probability</strong> of the lowest-risk profile. The Bayesian Network quantifies what underwriters already know intuitively — and makes it actionable.
+      The highest-risk profile (High rate · High DTI · Low FICO) has nearly <strong>5× the default probability</strong> of the lowest-risk profile. The Bayesian Network quantifies what underwriters already know intuitively, and makes it actionable.
     </div>
 
-    <p>This risk grid can feed directly into a credit scorecard, a loan approval threshold system, or a monitoring dashboard — giving you a probabilistic foundation for every decision.</p>
+    <p>This risk grid can feed directly into a credit scorecard, a loan approval threshold system, or a monitoring dashboard, giving you a probabilistic foundation for every decision.</p>
   </div>
 
   <hr class="divider">
-  <!-- MORE TUTORIALS -->
-  <div style="text-align:center; padding: 2.5rem 0; border-top: 1px solid var(--lgray); margin-top: 1rem;">
-    <p style="font-size:0.95rem; color: var(--gray);">
-      Browse all tutorials at
-      <a href="https://james-mott.jimmott52.workers.dev/#tutorials"
-         style="color: var(--navy); font-weight:600; text-decoration:none; border-bottom: 1px solid var(--navy);">
-        james-mott.jimmott52.workers.dev/#tutorials
-      </a>
-    </p>
+  <!-- BACK TO RESOURCES -->
+  <div class="tut-closing">
+    <p>Browse all tutorials in Resources.</p>
+    <a class="btn btn-outline" href="resources.html#tutorials">Back to Resources →</a>
   </div>
 
 </div><!-- /container -->
 
-<footer>
-  <p>© 2026 James C. Mott, Ph.D. · <a href="https://james-mott.jimmott52.workers.dev/">Back to site</a> · <a href="https://www.linkedin.com/in/JamesCMott">LinkedIn</a></p>
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span class="footer-left"><span class="logo-mark">JC<em>M</em></span><span class="footer-copy">© 2026 James C. Mott, Ph.D.</span></span>
+    <div class="footer-links">
+      <a href="index.html">About</a>
+      <a href="academy.html">Academy</a>
+      <a href="consulting.html">Consulting</a>
+      <a href="resources.html">Resources</a>
+      <a href="https://www.linkedin.com/in/JamesCMott" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+    </div>
+  </div>
 </footer>
 
 <script>

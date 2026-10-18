@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resources · Free Tutorials, Webinars &amp; Talks · James C. Mott</title>
+<meta name="description" content="Free tutorials with full code, live webinars, and talks on fraud detection, credit risk, and interpretable machine learning.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/site.css">
+</head>
+<body>
+
+<nav class="nav" aria-label="Main">
+  <a class="nav-brand" href="index.html" aria-label="James C. Mott, home">
+    <img src="img/james-nav.jpg" alt="">
+    <span class="logo"><span class="logo-mark">JC<em>M</em></span><span class="logo-rule"></span><span class="logo-word">James C. Mott</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">About</a>
+    <a href="academy.html">Academy</a>
+    <a href="consulting.html">Consulting</a>
+    <a href="resources.html" aria-current="page">Resources</a>
+  </div>
+</nav>
+
+<main>
+
+<!-- HERO -->
+<section class="section no-rule page-hero">
+  <div class="wrap">
+    <div class="enter" style="max-width:760px">
+      <div class="eyebrow">Resources</div>
+      <h1>Everything free,<br>in <em class="accent">one place</em></h1>
+      <p class="lead">Tutorials, webinars, and talks. Real data, real code, no signup.</p>
+      <div class="btn-row mt-6">
+        <a class="btn btn-primary btn-lg" href="#tutorials">Start with a tutorial</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 01 · TUTORIALS -->
+<section class="section" id="tutorials">
+  <div class="wrap">
+    <div class="section-header">
+      <span class="eyebrow">01 · Tutorials</span>
+      <h2>Tutorials &amp; code</h2>
+    </div>
+    <p class="lead wide mb-7">Hands-on notebooks and code walk-throughs, the kind of material I use with students to make abstract concepts concrete. Clone it, run it, or use it in your own teaching.</p>
+
+    <!-- ADD A NEW TUTORIAL: copy one <article class="card ... tut"> block and fill in the details. -->
+    <div class="card-flow">
+      <article class="card lg interactive column tut">
+        <div class="tut-head"><span class="tag python upper">Python</span><span class="badge free">Free · code included</span></div>
+        <div class="eyebrow muted">Explainability · Churn &amp; Retention</div>
+        <h3 class="serif">Your Churn Model Knows Who's Leaving. It Doesn't Know Why.</h3>
+        <p class="grow">A risk score tells you who is about to churn. It doesn't tell you what to do about it. SHAP paired with a churn taxonomy on the IBM Telco Customer Churn dataset, routing each at-risk customer to the intervention that fits their reason, not just their score.</p>
+        <div class="card-foot"><a class="btn btn-outline btn-sm" href="tutorial-churn-shap-taxonomy.html">Read tutorial →</a><span class="meta">Python Script · 2026</span></div>
+      </article>
+      <article class="card lg interactive column tut">
+        <div class="tut-head"><span class="tag python upper">Python</span><span class="badge free">Free · code included</span></div>
+        <div class="eyebrow muted">Model Evaluation · Credit Risk</div>
+        <h3 class="serif">Handling Imbalanced Classes in a Loan Default Model</h3>
+        <p class="grow">94% accuracy. Zero defaults caught. A practical guide to diagnosing the imbalanced class trap, explaining it to stakeholders, and fixing it with class weights, threshold tuning, and SMOTE.</p>
+        <div class="card-foot"><a class="btn btn-outline btn-sm" href="tutorial-imbalanced.html">Read tutorial →</a><span class="meta">Python Script · 2026</span></div>
+      </article>
+      <article class="card lg interactive column tut">
+        <div class="tut-head"><span class="tag python upper">Python</span><span class="badge free">Free · code included</span></div>
+        <div class="eyebrow muted">Model Stability · Credit Risk</div>
+        <h3 class="serif">Decision Trees vs. Random Forest: Why Your Model Restructured Overnight</h3>
+        <p class="grow">A routine data refresh changed 100% of decision tree splits, while a Random Forest barely noticed. A practical demonstration of model stability on real LendingClub data, with confusion matrices proving the difference.</p>
+        <div class="card-foot"><a class="btn btn-outline btn-sm" href="tutorial-trees.html">Read tutorial →</a><span class="meta">Python Script · 2026</span></div>
+      </article>
+      <article class="card lg interactive column tut">
+        <div class="tut-head"><span class="tag python upper">Python</span><span class="badge free">Free · code included</span></div>
+        <div class="eyebrow muted">Explainability · Credit Risk</div>
+        <h3 class="serif">SHAP: Explaining Every Prediction from Your Random Forest</h3>
+        <p class="grow">Your Random Forest is stable. But can you explain why it declined a borrower? SHAP gives you a mathematically grounded, feature-level breakdown of every individual prediction, including a ready-made adverse action notice.</p>
+        <div class="card-foot"><a class="btn btn-outline btn-sm" href="tutorial-shap.html">Read tutorial →</a><span class="meta">Python Script · 2026</span></div>
+      </article>
+      <article class="card lg interactive column tut">
+        <div class="tut-head"><span class="tag python upper">Python</span><span class="badge free">Free · code included</span></div>
+        <div class="eyebrow muted">Model Comparison · Credit Risk</div>
+        <h3 class="serif">XGBoost vs. Random Forest: A Head-to-Head Comparison</h3>
+        <p class="grow">XGBoost catches 25x more defaults than Random Forest. It also flags three times as many good borrowers by mistake, and drifts 10x more after a routine data refresh. Voting versus correcting, and what each one costs you.</p>
+        <div class="card-foot"><a class="btn btn-outline btn-sm" href="tutorial-xgb-rf.html">Read tutorial →</a><span class="meta">Python Script · 2026</span></div>
+      </article>
+      <article class="card lg interactive column tut">
+        <div class="tut-head"><span class="tag python upper">Python</span><span class="badge free">Free · code included</span></div>
+        <div class="eyebrow muted">Fraud Detection · Unsupervised ML</div>
+        <h3 class="serif">Finding Risky Borrowers Without a Target Variable</h3>
+        <p class="grow">Isolation Forest, Local Outlier Factor, and One-Class SVM applied to 24,977 LendingClub loans with no knowledge of who defaulted. Includes ranking, tiering by severity, and the critical distinction between unusual and risky.</p>
+        <div class="card-foot"><a class="btn btn-outline btn-sm" href="tutorial-anomaly.html">Read tutorial →</a><span class="meta">Python Script · 2026</span></div>
+      </article>
+      <article class="card lg interactive column tut">
+        <div class="tut-head"><span class="tag python upper">Python</span><span class="badge free">Free · code included</span></div>
+        <div class="eyebrow muted">Credit Risk · Segmentation</div>
+        <h3 class="serif">Latent Class Analysis for Borrower Segmentation</h3>
+        <p class="grow">Your PD model tells you who's risky. LCA tells you why. A practical walk-through using Gaussian Mixture Models to find hidden borrower segments in a 25,000-loan portfolio.</p>
+        <div class="card-foot"><a class="btn btn-outline btn-sm" href="tutorial-lca.html">Read tutorial →</a><span class="meta">Jupyter Notebook · 2026</span></div>
+      </article>
+      <article class="card lg interactive column tut">
+        <div class="tut-head"><span class="tag python upper">Python</span><span class="badge free">Free · code included</span></div>
+        <div class="eyebrow muted">Deployment · Credit Risk</div>
+        <h3 class="serif">Your Model Works. Can It Ship?</h3>
+        <p class="grow">A trained model sitting in a notebook can't score a loan application at 2am. Bundling preprocessing and prediction into one scikit-learn Pipeline, saving it with joblib, and serving it behind a Flask or FastAPI endpoint.</p>
+        <div class="card-foot"><a class="btn btn-outline btn-sm" href="tutorial-pipeline-deployment.html">Read tutorial →</a><span class="meta">Python Script · 2026</span></div>
+      </article>
+      <article class="card lg interactive column tut">
+        <div class="tut-head"><span class="tag python upper">Python</span><span class="badge free">Free · code included</span></div>
+        <div class="eyebrow muted">Probabilistic Reasoning</div>
+        <h3 class="serif">An Introduction to Bayesian Analysis</h3>
+        <p class="grow">How to set a prior, incorporate new evidence, and interpret the posterior. Starts with an intuitive rain and clouds example and builds up to applied cases. Designed for students new to probabilistic reasoning.</p>
+        <div class="card-foot"><a class="btn btn-outline btn-sm" href="tutorial-bayesian.html">Read tutorial →</a><span class="meta">Jupyter Notebook · 2026</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- 02 · WEBINARS -->
+<section class="section" id="webinars">
+  <div class="wrap">
+    <div class="section-header">
+      <span class="eyebrow">02 · Webinars</span>
+      <h2>Free live sessions</h2>
+    </div>
+    <p class="lead wide mb-7">Practical, instructor-led sessions on data science and AI, free to attend and offered live on a rotating schedule. Each one includes a live code demonstration and Q&amp;A.</p>
+    <div class="card-flow">
+      <article class="card lg interactive column" style="flex-basis:520px;max-width:720px">
+        <div class="tut-head"><span class="badge free">Free</span><span class="badge">Strategy · CRISP-DM</span></div>
+        <h3 class="sans" style="font-size:22px;line-height:1.25;margin:6px 0 10px">Data Science Strategy: Why Strategy Matters in Data Science &amp; AI Projects</h3>
+        <p class="mb-5">Most data science projects fail not because of bad models, but because of bad strategy. This session draws on CRISP-DM and real case studies to show what separates analysis that drives action from analysis that collects dust.</p>
+        <ul class="dot-list mb-5">
+          <li>How to define business goals before touching any data</li>
+          <li>The six CRISP-DM phases, and why skipping any one of them costs you</li>
+          <li>Common failure modes: high-accuracy models that changed nothing</li>
+          <li>What deployment actually looks like in a real organization</li>
+        </ul>
+        <p class="grow" style="color:var(--ink-muted)">→ Best for analysts, project managers, and executives running or considering a data science or AI initiative.</p>
+        <div class="card-foot">
+          <span class="meta" style="font-style:italic">Offered live · next date to be announced</span>
+          <a class="btn btn-outline btn-sm" href="mailto:Jimmott52@gmail.com?subject=Webinar%20Interest%3A%20Data%20Science%20Strategy">Get notified →</a>
+        </div>
+      </article>
+    </div>
+    <p class="mt-6" style="font-size:var(--fs-small);color:var(--ink-muted)">More sessions are in development. <a href="mailto:Jimmott52@gmail.com?subject=Webinar%20Inquiry">Request a topic →</a></p>
+  </div>
+</section>
+
+<!-- 03 · TALKS -->
+<section class="section" id="talks">
+  <div class="wrap">
+    <div class="section-header">
+      <span class="eyebrow">03 · Talks</span>
+      <h2>Talks &amp; lectures</h2>
+    </div>
+    <article class="talk">
+      <div>
+        <div class="eyebrow">April 16, 2025</div>
+        <h3>From Card Catalogs to ChatGPT</h3>
+        <div class="talk-venue">Knox College · with moderator Mark Stefanik &rsquo;74</div>
+        <p class="talk-summary">A personal reflection on fifty years of research transformation, from the card catalogs and microfiche of 1974 to today&rsquo;s AI assistants. Drawing on my own dissertation work with Gallup polling archives, the talk asks what the slow, effortful research of the pre-digital era actually taught us, what we&rsquo;ve gained in the shift to Google and ChatGPT, and what we&rsquo;ve quietly traded away.</p>
+        <div class="eyebrow mb-5">Three things it covers</div>
+        <ul class="dot-list">
+          <li>What the card-catalog era actually taught researchers, and why the effort mattered</li>
+          <li>Three live AI demos on my 1936 election data</li>
+          <li>The CRAAP test as a working filter for sources in the AI age</li>
+        </ul>
+      </div>
+      <div class="viewer" data-talk="knox-2025">
+        <div class="stage" tabindex="0" aria-label="Slide viewer. Use the left and right arrow keys."></div>
+        <div class="viewer-bar">
+          <button class="viewer-btn" data-dir="-1" aria-label="Previous slide"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <div class="viewer-count"><strong class="viewer-current">1</strong> / 23</div>
+          <button class="viewer-btn" data-dir="1" aria-label="Next slide"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- CLOSING CTA: Resources never links up to Academy -->
+<section class="section dark on-dark closing">
+  <div class="wrap">
+    <div style="max-width:720px">
+      <h2>New material lands here first</h2>
+      <p class="lead">Tutorials, sessions and notes are published as they are written. Nothing is gated and there is no mailing list. I post on LinkedIn when something is ready.</p>
+      <a class="btn btn-primary btn-lg" href="https://www.linkedin.com/in/JamesCMott" target="_blank" rel="noopener noreferrer">Follow on LinkedIn ↗</a>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span class="footer-left"><span class="logo-mark">JC<em>M</em></span><span class="footer-copy">© 2026 James C. Mott, Ph.D.</span></span>
+    <div class="footer-links">
+      <a href="index.html">About</a>
+      <a href="academy.html">Academy</a>
+      <a href="consulting.html">Consulting</a>
+      <a href="resources.html">Resources</a>
+      <a href="https://www.linkedin.com/in/JamesCMott" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script src="js/site.js"></script>
+</body>
+</html>
