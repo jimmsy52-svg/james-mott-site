@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Backtesting Tutorial · James C. Mott, Ph.D.</title>
+<meta name="description" content="A random split tells you how well a model describes the past. A year-by-year backtest on LendingClub data shows how it does on loans issued after it was built.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link rel="stylesheet" href="css/tutorial.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+</head>
+<body class="tutorial">
+
+<nav class="nav" aria-label="Main">
+  <a class="nav-brand" href="index.html" aria-label="James C. Mott, home">
+    <img src="img/james-nav.jpg" alt="">
+    <span class="logo"><span class="logo-mark">JC<em>M</em></span><span class="logo-rule"></span><span class="logo-word">James C. Mott</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">About</a>
+    <a href="academy.html">Academy</a>
+    <a href="consulting.html">Consulting</a>
+    <a href="resources.html" aria-current="page">Resources</a>
+  </div>
+</nav>
+
+<main>
+
+<header class="tut-hero">
+  <div class="tut-hero-inner">
+    <a class="tut-back" href="resources.html#tutorials">← All tutorials</a>
+    <div class="hero-tag">Tutorial · Python · Model Validation · Credit Risk</div>
+    <h1>Testing a Model<br>Against a Future<br><em>It Hasn't Seen</em></h1>
+    <p class="hero-sub">A random split tells you how well a model describes the past. A backtest tells you how it does on data that arrived after it was built. Here's a year-by-year backtest on real LendingClub data, and what it shows that a random split hides.</p>
+    <div class="hero-meta">
+      <span>Python Script</span>
+      <span>scikit-learn · XGBoost · pandas</span>
+      <span>2026</span>
+      <span>~25 min</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#problem">The Problem with a Random Split</a></li>
+      <li><a href="#concept">Backtesting: A Future You Already Know</a></li>
+      <li><a href="#catch">The Catch with Loan Data</a></li>
+      <li><a href="#setup">Setup &amp; Imports</a></li>
+      <li><a href="#data">Build the 12-Month Default Flag</a></li>
+      <li><a href="#features">Application-Time Features and Two Models</a></li>
+      <li><a href="#random">The Usual Way: A Random 80/20 Split</a></li>
+      <li><a href="#backtest">The Backtest: Year by Year</a></li>
+      <li><a href="#size">Is It Time, or Just Smaller Training Sets?</a></li>
+      <li><a href="#calibration">The Bigger Problem: The Probabilities</a></li>
+      <li><a href="#takeaway">What a Backtest Can't Tell You</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <div class="tut-section" id="problem">
+    <div class="section-num">01 · The Problem</div>
+    <h2>A Random Split Answers a Different Question</h2>
+    <p>Early in my career, testing a model meant holding out the last six months of data. We built the model on everything before that, then scored the most recent six months and compared the predictions to what actually happened. Nobody called it anything special. It was just how you checked your work.</p>
+    <p>Most of the tutorials I see today do it differently, including some of my own. They split the data at random: eighty percent for training, twenty for testing, no matter when the loans were made. The numbers that come out look clean. But they answer a different question.</p>
+    <p>A random split tells you how well a model describes the past. That old six-month holdout told you something closer to what you need: how the model does on data that arrived after it was built. In this tutorial I take that habit one step further. Instead of holding out one period, I hold out one year at a time and walk the model forward through four of them.</p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-val good">0.70</div>
+        <div class="stat-lbl">XGBoost AUC on a random 80/20 split</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">0.59</div>
+        <div class="stat-lbl">XGBoost AUC predicting 2014 loans in the backtest</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">4.5% vs 7.0%</div>
+        <div class="stat-lbl">predicted vs. actual default rate for 2016 loans</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val warn">⅓ fewer</div>
+        <div class="stat-lbl">defaults predicted than actually happened in 2016</div>
+      </div>
+    </div>
+
+    <h3>Why a random split flatters the model</h3>
+    <p>A random split mixes every year into both sets, so the model can learn from 2016 loans and then be tested on 2012 ones. The test set also looks just like the training set. Same years, same borrowers, same lending standards, same economy. A model that scores well under those conditions has shown it can describe the period it was trained on. It hasn't shown it can predict a period it hasn't seen.</p>
+    <p>In practice, that second thing is the only one that matters. Nobody deploys a credit model to score loans from three years ago.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 2 -->
+  <div class="tut-section" id="concept">
+    <div class="section-num">02 · Key Concept</div>
+    <h2>Following Predictions into a Future You Already Know</h2>
+    <p>The obvious fix is to wait. Deploy the model, follow the loans, and see how they turn out. That works, but it takes years. By the time you have an answer, the model has already been making decisions.</p>
+    <p>Backtesting gets you the same evidence without the wait. You pretend it's the end of 2013 and train only on what you would have known at that point. Then you predict the loans issued in 2014. Because 2014 is history, you already know which of those loans defaulted, so you can score the predictions right away.</p>
+    <p>Then you step forward. Pretend it's the end of 2014 and predict 2015. Then the end of 2015, and predict 2016. Each step is a small rehearsal of what would have happened if you had put the model into production that year.</p>
+
+    <div class="callout key">
+      <div class="callout-label">The Core Idea</div>
+      <p>Train only on what you would have known at the time. Predict the next year. Score it against what really happened. Step forward and repeat.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3 -->
+  <div class="tut-section" id="catch">
+    <div class="section-num">03 · The Catch</div>
+    <h2>Loans Take Time to Go Bad</h2>
+    <p>A LendingClub loan runs 36 or 60 months, and a loan issued last month looks perfectly healthy because it hasn't had time to default. If you count those loans as good, the model learns that new loans are safe, and the backtest rewards it for that mistake.</p>
+    <p>The fix I use is a fixed performance window. A loan counts as a default if it defaulted within 12 months of issue. Every loan in every test year then gets the same amount of time to show what it is.</p>
+
+    <div class="callout warn">
+      <div class="callout-label">The Consequence That's Easy to Miss</div>
+      <p>If I'm standing at the end of 2013, I only know the 12-month outcome for loans issued through 2012. Loans from 2013 are still in their first year. So each training set has to stop a year before the test year begins: to predict year Y, train only on loans issued through Y minus 2.</p>
+      <p style="margin-top:0.5rem;">It feels like throwing data away. It's actually the point. The model only gets what I would really have had in hand.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4 -->
+  <div class="tut-section" id="setup">
+    <div class="section-num">04 · Setup</div>
+    <h2>Imports and Settings</h2>
+    <p>The script runs from the command line and takes the path to the LendingClub sample as its one argument. The snapshot date matters: the data was pulled in March 2019, so loans issued through December 2017 have at least 15 months of history, enough for a 12-month default to show up.</p>
+    <div class="code-block">
+      <div class="code-header"><span>backtest_lendingclub.py · setup</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">import sys
+import numpy as np
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from xgboost import XGBClassifier
+
+SEED = 42
+DATA_PATH = sys.argv[1] if len(sys.argv) &gt; 1 else "lendingclub_sample_25000.csv"
+LAST_ELIGIBLE_ISSUE = "2017-12-01"   # snapshot is March 2019, so 15+ months of history
+TEST_YEARS = [2014, 2015, 2016, 2017]</code></pre>
+    </div>
+    <div class="callout tip">
+      <div class="callout-label">Run It</div>
+      <p><code>python backtest_lendingclub.py lendingclub_sample_25000.csv</code></p>
+      <p style="margin-top:0.5rem;">Install if needed: <code>pip install pandas numpy scikit-learn xgboost</code></p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5 -->
+  <div class="tut-section" id="data">
+    <div class="section-num">05 · Data</div>
+    <h2>Build the 12-Month Default Flag</h2>
+    <p>A loan counts as a default if it ended up charged off or seriously late and the borrower stopped paying within the first 12 months. LendingClub doesn't record a default date, so I use the last payment date as a stand-in. Loans issued after December 2017 are dropped because they haven't had a full window yet.</p>
+    <div class="code-block">
+      <div class="code-header"><span>backtest_lendingclub.py · step 1</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">df = pd.read_csv(DATA_PATH, low_memory=False).copy()
+
+issue = pd.to_datetime(df["issue_d"], format="%b-%Y")
+last_pay = pd.to_datetime(df["last_pymnt_d"], format="%b-%Y")
+months_paying = ((last_pay.dt.year - issue.dt.year) * 12
+                 + (last_pay.dt.month - issue.dt.month)).fillna(0)  # no payment = 0
+
+bad_status = df["loan_status"].isin([
+    "Charged Off",
+    "Default",
+    "Late (31-120 days)",
+    "Does not meet the credit policy. Status:Charged Off",
+])
+df["default_12m"] = (bad_status &amp; (months_paying &lt;= 12)).astype(int)
+df["issue_year"] = issue.dt.year
+
+df = df[issue &lt;= LAST_ELIGIBLE_ISSUE].copy()</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 6 -->
+  <div class="tut-section" id="features">
+    <div class="section-num">06 · Features &amp; Models</div>
+    <h2>Application-Time Features and Two Models</h2>
+    <p>Two models go through the same backtest. One is XGBoost, the boosted model from my <a href="tutorial-xgb-rf.html">XGBoost vs. Random Forest tutorial</a> and the kind that tends to look best on a random split. The other is a plain logistic regression. Both use the same 25 features, all known at the time of application, such as income, debt-to-income ratio, FICO score, and loan grade.</p>
+    <div class="code-block">
+      <div class="code-header"><span>backtest_lendingclub.py · step 2</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">df["term_months"] = df["term"].str.extract(r"(\d+)").astype(float)
+df["emp_years"] = (df["emp_length"].str.replace("&lt; 1", "0", regex=False)
+                   .str.extract(r"(\d+)").astype(float))
+earliest = pd.to_datetime(df["earliest_cr_line"], format="%b-%Y", errors="coerce")
+df["credit_history_months"] = ((issue.loc[df.index].dt.year - earliest.dt.year) * 12
+                               + (issue.loc[df.index].dt.month - earliest.dt.month))
+grade_order = {g: i for i, g in enumerate("ABCDEFG")}
+df["grade_num"] = df["grade"].map(grade_order)
+df["sub_grade_num"] = df["grade_num"] * 5 + df["sub_grade"].str[1].astype(float)
+df["fico"] = (df["fico_range_low"] + df["fico_range_high"]) / 2
+df["loan_to_income"] = df["loan_amnt"] / df["annual_inc"].replace(0, np.nan)
+
+NUMERIC = [
+    "loan_amnt", "term_months", "int_rate", "installment", "grade_num",
+    "sub_grade_num", "emp_years", "annual_inc", "loan_to_income", "dti",
+    "delinq_2yrs", "fico", "inq_last_6mths", "mths_since_last_delinq",
+    "open_acc", "pub_rec", "revol_bal", "revol_util", "total_acc",
+    "mort_acc", "pub_rec_bankruptcies", "credit_history_months",
+]
+CATEGORICAL = ["home_ownership", "verification_status", "purpose"]
+FEATURES = NUMERIC + CATEGORICAL
+TARGET = "default_12m"
+
+
+def make_logit():
+    pre = ColumnTransformer([
+        ("num", Pipeline([("impute", SimpleImputer(strategy="median")),
+                          ("scale", StandardScaler())]), NUMERIC),
+        ("cat", OneHotEncoder(handle_unknown="ignore", min_frequency=20), CATEGORICAL),
+    ])
+    return Pipeline([("pre", pre), ("model", LogisticRegression(max_iter=2000))])
+
+
+def make_xgb():
+    pre = ColumnTransformer([
+        ("num", "passthrough", NUMERIC),
+        ("cat", OneHotEncoder(handle_unknown="ignore", min_frequency=20), CATEGORICAL),
+    ])
+    model = XGBClassifier(
+        n_estimators=300, max_depth=3, learning_rate=0.05, subsample=0.8,
+        colsample_bytree=0.8, min_child_weight=5, eval_metric="logloss",
+        random_state=SEED, n_jobs=4,
+    )
+    return Pipeline([("pre", pre), ("model", model)])
+
+
+MODELS = {"XGBoost": make_xgb, "Logistic regression": make_logit}</code></pre>
+    </div>
+    <div class="callout info">
+      <div class="callout-label">Why a Baseline</div>
+      <p>The baseline matters. If the boosted model can't beat logistic regression when both face the future, the extra complexity isn't buying anything.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 7 -->
+  <div class="tut-section" id="random">
+    <div class="section-num">07 · Random Split</div>
+    <h2>The Usual Way: A Random 80/20 Split</h2>
+    <p>First, the default rate by issue year, and then the validation most tutorials stop at. I track two things for every test: AUC, which tells me whether the model ranks risky borrowers above safer ones, and the predicted default rate against the actual rate, which tells me whether the model's probabilities still mean what they say.</p>
+    <div class="code-block">
+      <div class="code-header"><span>backtest_lendingclub.py · step 3</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">print("Eligible loans:", len(df), "| 12-month defaults:", int(df[TARGET].sum()))
+print("\nDefault rate by issue year")
+print(df.groupby("issue_year")[TARGET].agg(loans="size", defaults="sum", rate="mean")
+        .round(3).to_string())
+
+train, test = train_test_split(df, test_size=0.2, stratify=df[TARGET], random_state=SEED)
+random_rows = []
+for name, make in MODELS.items():
+    m = make().fit(train[FEATURES], train[TARGET])
+    p = m.predict_proba(test[FEATURES])[:, 1]
+    random_rows.append({"model": name, "auc": roc_auc_score(test[TARGET], p),
+                        "predicted_rate": p.mean(), "actual_rate": test[TARGET].mean()})
+random_split = pd.DataFrame(random_rows)
+print("\nRandom 80/20 split")
+print(random_split.round(3).to_string(index=False))</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Output</span>
+Eligible loans: 19512 | 12-month defaults: 1213
+
+Default rate by issue year
+            loans  defaults   rate
+issue_year
+2007            6         0  0.000
+2008           27         1  0.037
+2009           77         7  0.091
+2010          141         7  0.050
+2011          219        11  0.050
+2012          598        31  0.052
+2013         1484        63  0.042
+2014         2588       138  0.053
+2015         4672       288  0.062
+2016         4783       333  0.070
+2017         4917       334  0.068
+
+Random 80/20 split
+              model   auc  predicted_rate  actual_rate
+            XGBoost 0.696           0.063        0.062
+Logistic regression 0.686           0.062        0.062</div>
+
+    <p>Of the 25,000 loans in the sample, 19,512 have a full 12-month window, issued from 2007 through 2017. Of those, 1,213 stopped paying within their first year, about 6 percent.</p>
+    <p>On the random split, XGBoost scores an AUC of 0.70 and logistic regression 0.69. The models predict a 6.2 percent default rate on the test set, and the actual rate is 6.2 percent. On paper, that's a tidy result.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 8 -->
+  <div class="tut-section" id="backtest">
+    <div class="section-num">08 · Backtest</div>
+    <h2>The Backtest: Train Through Y Minus 2, Predict Year Y</h2>
+    <div class="code-block">
+      <div class="code-header"><span>backtest_lendingclub.py · step 4</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">rows = []
+for year in TEST_YEARS:
+    tr = df[df["issue_year"] &lt;= year - 2]
+    te = df[df["issue_year"] == year]
+    for name, make in MODELS.items():
+        m = make().fit(tr[FEATURES], tr[TARGET])
+        p = m.predict_proba(te[FEATURES])[:, 1]
+        rows.append({
+            "test_year": year, "model": name,
+            "train_loans": len(tr), "train_defaults": int(tr[TARGET].sum()),
+            "test_loans": len(te), "test_defaults": int(te[TARGET].sum()),
+            "auc": roc_auc_score(te[TARGET], p),
+            "predicted_rate": p.mean(), "actual_rate": te[TARGET].mean(),
+        })
+backtest = pd.DataFrame(rows)
+print("\nYear-by-year backtest")
+print(backtest.round(3).to_string(index=False))</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Output</span>
+Year-by-year backtest
+ test_year               model  train_loans  train_defaults  test_loans  test_defaults   auc  predicted_rate  actual_rate
+      2014             XGBoost         1068              57        2588            138 0.599           0.041        0.053
+      2014 Logistic regression         1068              57        2588            138 0.589           0.044        0.053
+      2015             XGBoost         2552             120        4672            288 0.629           0.041        0.062
+      2015 Logistic regression         2552             120        4672            288 0.630           0.036        0.062
+      2016             XGBoost         5140             258        4783            333 0.646           0.046        0.070
+      2016 Logistic regression         5140             258        4783            333 0.677           0.047        0.070
+      2017             XGBoost         9812             546        4917            334 0.704           0.056        0.068
+      2017 Logistic regression         9812             546        4917            334 0.710           0.051        0.068</div>
+
+    <div class="tree-img-wrap">
+      <img src="img/backtest_auc_by_year.png" alt="Line chart of backtest AUC by test year for XGBoost and logistic regression, rising from 0.59 in 2014 to about 0.70 in 2017, against a dashed line for the random-split AUC of 0.70">
+      <p class="tree-img-caption"><strong>Figure:</strong> Backtest AUC stayed below the random-split result until 2017. Each model trained only on loans issued at least two years earlier. LendingClub sample of 25,000 loans, 19,512 issued 2007 to 2017 with a full 12-month window.</p>
+    </div>
+
+    <p>The backtest tells a different story. Predicting 2014 loans, XGBoost scored 0.59. It reached 0.63 in 2015 and 0.64 in 2016 before matching the random split in 2017.</p>
+    <p>Logistic regression kept pace the whole way. It matched XGBoost in 2014 and 2015 and beat it in 2016 and 2017. Once both models had to face the future, the extra complexity bought nothing.</p>
+
+    <div class="callout info">
+      <div class="callout-label">Your Numbers May Differ Slightly</div>
+      <p>XGBoost results shift a little between library versions. The output above came from XGBoost 3.2 and differs from the charts by about 0.01 in places. The pattern, and every conclusion here, is the same.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 9 -->
+  <div class="tut-section" id="size">
+    <div class="section-num">09 · Fair Comparison</div>
+    <h2>Is It Time, or Just Smaller Training Sets?</h2>
+    <p>Part of that gap isn't about time at all. The early backtests had very little to learn from. The 2014 model trained on just 1,068 loans and 57 defaults. So I reran the random split with training sets cut to the same sizes, five times each, and averaged the AUC.</p>
+    <div class="code-block">
+      <div class="code-header"><span>backtest_lendingclub.py · step 5</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">size_rows = []
+for year in TEST_YEARS:
+    n = int((df["issue_year"] &lt;= year - 2).sum())
+    aucs = []
+    for s in range(5):
+        tr, te = train_test_split(df, test_size=0.2, stratify=df[TARGET], random_state=s)
+        tr = tr.sample(n, random_state=s)
+        m = make_xgb().fit(tr[FEATURES], tr[TARGET])
+        aucs.append(roc_auc_score(te[TARGET], m.predict_proba(te[FEATURES])[:, 1]))
+    size_rows.append({"test_year": year, "train_loans": n,
+                      "random_split_auc_same_size": np.mean(aucs)})
+size_check = pd.DataFrame(size_rows).merge(
+    backtest[backtest["model"] == "XGBoost"][["test_year", "auc"]]
+    .rename(columns={"auc": "backtest_auc"}), on="test_year")
+print("\nXGBoost: random split with the same training size vs. backtest")
+print(size_check.round(3).to_string(index=False))
+
+random_split.to_csv("random_split_results.csv", index=False)
+backtest.to_csv("backtest_results.csv", index=False)
+print("\nSaved random_split_results.csv and backtest_results.csv")</code></pre>
+    </div>
+
+    <div class="output-block"><span class="output-label">Output</span>
+XGBoost: random split with the same training size vs. backtest
+ test_year  train_loans  random_split_auc_same_size  backtest_auc
+      2014         1068                       0.637         0.599
+      2015         2552                       0.666         0.629
+      2016         5140                       0.683         0.646
+      2017         9812                       0.689         0.704
+
+Saved random_split_results.csv and backtest_results.csv</div>
+
+    <p>Even with the same training sizes, the backtest came in 3 to 4.5 points of AUC lower for 2014 through 2016. That remaining gap is the cost of predicting forward. By 2017, with almost 10,000 training loans, it was gone.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 10 -->
+  <div class="tut-section" id="calibration">
+    <div class="section-num">10 · Calibration</div>
+    <h2>The Bigger Problem Showed Up in the Probabilities</h2>
+    <p>A model can keep ranking well while its probabilities drift, and drifting probabilities are what throw off pricing and loss forecasts. On the random split, predicted and actual default rates matched. In the backtest, XGBoost under-predicted defaults in every year. In 2016 it expected 4.5 percent and got 7.0 percent, about a third fewer defaults than actually happened.</p>
+
+    <div class="tree-img-wrap">
+      <img src="img/backtest_predicted_vs_actual.png" alt="Dot chart of XGBoost predicted versus actual 12-month default rates: both 6.2 percent on the random split, but predictions 1.2 to 2.5 points too low in every backtest year from 2014 to 2017">
+      <p class="tree-img-caption"><strong>Figure:</strong> XGBoost under-predicted defaults in every backtest year. On the random split, predicted and actual matched. LendingClub sample of 25,000 loans, 12-month default rate.</p>
+    </div>
+
+    <p>The reason is in the data. Twelve-month default rates rose from 4.2 percent for loans issued in 2013 to about 7 percent for 2016 and 2017. Every model learned from calmer years than the one it had to predict. A random split hides that completely, because it mixes calm years and rough ones into both training and test.</p>
+
+    <div class="callout warn">
+      <div class="callout-label">Look at 2017 Again</div>
+      <p>The AUC matched the random split, yet the model predicted 5.6 percent against an actual 6.8 percent. It ranked borrowers just fine and still got the level wrong. If I had priced loans off those probabilities, I would have underpriced the risk.</p>
+    </div>
+
+    <p>One caveat on these numbers. LendingClub doesn't record a default date, so I used the last payment date as a stand-in. The sample also has few loans before 2013, which is why the backtest starts with 2014.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 11 -->
+  <div class="tut-section" id="takeaway">
+    <div class="section-num">11 · Takeaway</div>
+    <h2>What a Backtest Can't Tell You</h2>
+    <p>A backtest tells you how your approach held up across the years you have. It doesn't promise that next year will behave like any of them. Conditions can change in ways your history never showed you.</p>
+    <p>That's why the work doesn't stop once a model is deployed. You keep comparing its predictions to what actually happens. For the first step, putting a model into production, see <a href="tutorial-pipeline-deployment.html">Your Model Works. Can It Ship?</a></p>
+
+    <div class="callout key">
+      <div class="callout-label">The Practical Takeaway</div>
+      <p>Before you trust a model's validation score, ask which years it was tested on. If the answer is the same years it was trained on, you don't know yet how it will do.</p>
+    </div>
+
+    <div class="btn-row mt-6">
+      <a class="btn btn-primary" href="code/backtest_lendingclub.py" download>Download the full script (.py) ↓</a>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- BACK TO RESOURCES -->
+  <div class="tut-closing">
+    <p>Browse all tutorials in Resources.</p>
+    <a class="btn btn-outline" href="resources.html#tutorials">Back to Resources →</a>
+  </div>
+
+</div>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span class="footer-left"><span class="logo-mark">JC<em>M</em></span><span class="footer-copy">© 2026 James C. Mott, Ph.D.</span></span>
+    <div class="footer-links">
+      <a href="index.html">About</a>
+      <a href="academy.html">Academy</a>
+      <a href="consulting.html">Consulting</a>
+      <a href="resources.html">Resources</a>
+      <a href="https://www.linkedin.com/in/JamesCMott" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  hljs.highlightAll();
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
