@@ -614,3 +614,21 @@ mark {
   *, *::before, *::after { animation: none !important; transition: none !important; }
   html { scroll-behavior: auto; }
 }
+
+/* ================= DATA TABLE + PULL QUOTE (pipeline-retention.html) ================= */
+.table-scroll { overflow-x: auto; margin-top: var(--space-5); background: var(--paper-pure); border: 1px solid var(--border-hairline); border-radius: var(--radius-md); }
+.data-table { width: 100%; border-collapse: collapse; font-size: var(--fs-small); min-width: 560px; }
+.data-table th { font-family: var(--font-mono); font-size: var(--fs-kick); font-weight: 400; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-muted); text-align: left; padding: 14px 18px; border-bottom: 1px solid var(--border-hairline); }
+.data-table td { padding: 14px 18px; border-bottom: 1px solid var(--border-hairline); color: var(--ink-soft); vertical-align: top; line-height: 1.5; }
+.data-table tr:last-child td { border-bottom: 0; }
+.data-table td:first-child { color: var(--ink); font-weight: 500; }
+.table-note { font-size: var(--fs-meta); color: var(--ink-muted); font-style: italic; margin-top: var(--space-3); }
+.flag { font-family: var(--font-mono); font-size: var(--fs-kick); letter-spacing: 0.09em; text-transform: uppercase; }
+.flag.ok { color: var(--success); }
+.flag.warn { color: var(--accent-warm); }
+.flag.bad { color: var(--danger); }
+.pullquote { border-left: 3px solid var(--accent); padding: 4px 0 4px var(--space-5); margin-top: var(--space-7); max-width: 62ch; }
+.pullquote p { font-family: var(--font-display); font-size: var(--fs-h3); line-height: 1.35; color: var(--ink); }
+.pullquote cite { display: block; margin-top: var(--space-3); font-style: normal; font-family: var(--font-mono); font-size: var(--fs-kick); letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-muted); }
+.process.three { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 760px) { .process.three { grid-template-columns: 1fr; } }
