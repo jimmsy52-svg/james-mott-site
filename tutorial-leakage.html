@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Leakage Tutorial · James C. Mott, Ph.D.</title>
+<meta name="description" content="A LendingClub credit model with a perfect AUC of 1.000, and why it is useless. How to find data leakage, remove it, and see what a model is really worth.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="css/site.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link rel="stylesheet" href="css/tutorial.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/python.min.js"></script>
+</head>
+<body class="tutorial">
+
+<nav class="nav" aria-label="Main">
+  <a class="nav-brand" href="index.html" aria-label="James C. Mott, home">
+    <img src="img/james-nav.jpg" alt="">
+    <span class="logo"><span class="logo-mark">JC<em>M</em></span><span class="logo-rule"></span><span class="logo-word">James C. Mott</span></span>
+  </a>
+  <div class="nav-links">
+    <a href="index.html">About</a>
+    <a href="academy.html">Academy</a>
+    <a href="consulting.html">Consulting</a>
+    <a href="resources.html" aria-current="page">Resources</a>
+  </div>
+</nav>
+
+<main>
+
+<header class="tut-hero">
+  <div class="tut-hero-inner">
+    <a class="tut-back" href="resources.html#tutorials">← All tutorials</a>
+    <div class="hero-tag">Tutorial · Python · Model Validation · Credit Risk</div>
+    <h1>The Model That<br>Knew <em>the Answer</em></h1>
+    <p class="hero-sub">I built a credit model with a perfect score, on purpose. Here's where its answers came from, how to find a leak like that in your own data, and what the model was really worth once the leak was gone.</p>
+    <div class="hero-meta">
+      <span>Python Script</span>
+      <span>scikit-learn · XGBoost · pandas</span>
+      <span>2026</span>
+      <span>~20 min</span>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <nav class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#problem">A Model with a Perfect Score</a></li>
+      <li><a href="#concept">The Decision-Day Test</a></li>
+      <li><a href="#setup">Setup &amp; Imports</a></li>
+      <li><a href="#data">Finished Loans Only</a></li>
+      <li><a href="#features">Two Sets of Features</a></li>
+      <li><a href="#models">The Every-Column Model vs. the Honest One</a></li>
+      <li><a href="#find">Finding the Leak</a></li>
+      <li><a href="#quiet">A Quieter Leak: Encoding Before the Split</a></li>
+      <li><a href="#takeaway">A Checklist for Your Own Model</a></li>
+    </ol>
+  </nav>
+
+  <!-- SECTION 1 -->
+  <div class="tut-section" id="problem">
+    <div class="section-num">01 · The Problem</div>
+    <h2>A Model with a Perfect Score</h2>
+    <p>I gave a credit model 2,983 LendingClub loans it had never seen, and it ranked every borrower who later defaulted ahead of every borrower who paid. It was right on 99.6% of the loans. It's also completely useless. It would fail on the first application it scored in production, and it would do it quietly, because every test I'd normally run had already said it was perfect.</p>
+    <p>The model wasn't predicting anything. It was reading answers that had leaked into the data. Data leakage happens when a model trains on information it won't have at the moment it has to make a decision. It rarely looks like an error. It looks like a great result.</p>
+
+    <div class="stat-row">
+      <div class="stat-box">
+        <div class="stat-val bad">1.000</div>
+        <div class="stat-lbl">XGBoost AUC using every column in the export</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val good">0.701</div>
+        <div class="stat-lbl">The same model using only what was known on the day the loan was issued</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val bad">0.944</div>
+        <div class="stat-lbl">AUC of the most recent FICO score on its own, with no model at all</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-val warn">+0.036</div>
+        <div class="stat-lbl">AUC gained from a zip-code feature built before the split. Built correctly: nothing.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 2 -->
+  <div class="tut-section" id="concept">
+    <div class="section-num">02 · Key Concept</div>
+    <h2>The Decision-Day Test</h2>
+    <p>Every leak in this tutorial fails the same test. For each piece of information the model uses, ask whether you would have had it at the moment you made the decision. For a loan, that moment is the day it was issued.</p>
+    <p>Income, debt-to-income, the FICO score on the application, interest rate, term and credit history pass. Payments received, recoveries, a settlement flag and the borrower's latest FICO pull don't. They were recorded months or years later, and several of them only exist because the loan went bad.</p>
+    <div class="callout key">
+      <div class="callout-label">The Core Idea</div>
+      <p>If a value wasn't known on decision day, the model can't use it. That applies to columns, and it also applies to anything you calculate from the data, like averages or encodings.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 3 -->
+  <div class="tut-section" id="setup">
+    <div class="section-num">03 · Setup</div>
+    <h2>Imports and Settings</h2>
+    <div class="code-block">
+      <div class="code-header"><span>leakage_lendingclub.py · setup</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">import sys
+
+import numpy as np
+import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.metrics import accuracy_score, recall_score, roc_auc_score
+from sklearn.model_selection import KFold, train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import OneHotEncoder
+from xgboost import XGBClassifier
+
+SEED = 42
+DATA_PATH = sys.argv[1] if len(sys.argv) &gt; 1 else "lendingclub_sample_25000.csv"</code></pre>
+    </div>
+    <div class="callout tip">
+      <div class="callout-label">Run It</div>
+      <p><code>python leakage_lendingclub.py lendingclub_sample_25000.csv</code></p>
+      <p style="margin-top:0.5rem;">Install if needed: <code>pip install pandas numpy scikit-learn xgboost</code></p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 4 -->
+  <div class="tut-section" id="data">
+    <div class="section-num">04 · Data</div>
+    <h2>Finished Loans Only</h2>
+    <p>Loans that are still being paid don't have an outcome yet, so I keep only the ones that finished: repaid in full, or charged off. That leaves 14,913 of the 25,000 loans in the sample, and 20.2% of them were charged off.</p>
+    <div class="code-block">
+      <div class="code-header"><span>leakage_lendingclub.py · step 1</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">df = pd.read_csv(DATA_PATH, low_memory=False)
+good = df["loan_status"].isin(["Fully Paid", "Does not meet the credit policy. Status:Fully Paid"])
+bad = df["loan_status"].isin(["Charged Off", "Does not meet the credit policy. Status:Charged Off"])
+df = df[good | bad].copy()
+df["charged_off"] = bad[good | bad].astype(int)
+TARGET = "charged_off"
+
+issue = pd.to_datetime(df["issue_d"], format="%b-%Y")</code></pre>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 5 -->
+  <div class="tut-section" id="features">
+    <div class="section-num">05 · Features</div>
+    <h2>Two Sets of Features</h2>
+    <p>The first set is the same application-time features I used in the <a href="tutorial-backtesting.html">backtesting tutorial</a>. Everything here was known on the day the loan was issued.</p>
+    <div class="code-block">
+      <div class="code-header"><span>leakage_lendingclub.py · step 2</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">df["term_months"] = df["term"].str.extract(r"(\d+)").astype(float)
+df["emp_years"] = (df["emp_length"].str.replace("&lt; 1", "0", regex=False)
+                   .str.extract(r"(\d+)").astype(float))
+earliest = pd.to_datetime(df["earliest_cr_line"], format="%b-%Y", errors="coerce")
+df["credit_history_months"] = ((issue.dt.year - earliest.dt.year) * 12
+                               + (issue.dt.month - earliest.dt.month))
+grade_order = {g: i for i, g in enumerate("ABCDEFG")}
+df["grade_num"] = df["grade"].map(grade_order)
+df["sub_grade_num"] = df["grade_num"] * 5 + df["sub_grade"].str[1].astype(float)
+df["fico"] = (df["fico_range_low"] + df["fico_range_high"]) / 2
+df["loan_to_income"] = df["loan_amnt"] / df["annual_inc"].replace(0, np.nan)
+
+AT_ISSUE = [
+    "loan_amnt", "term_months", "int_rate", "installment", "grade_num",
+    "sub_grade_num", "emp_years", "annual_inc", "loan_to_income", "dti",
+    "delinq_2yrs", "fico", "inq_last_6mths", "mths_since_last_delinq",
+    "open_acc", "pub_rec", "revol_bal", "revol_util", "total_acc",
+    "mort_acc", "pub_rec_bankruptcies", "credit_history_months",
+]
+CATEGORICAL = ["home_ownership", "verification_status", "purpose"]</code></pre>
+    </div>
+    <p>The second set is the problem. These fields sit in the same export and look like ordinary columns, but every one of them was recorded after the loan was issued.</p>
+    <div class="code-block">
+      <div class="code-header"><span>leakage_lendingclub.py · step 3</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">last_pay = pd.to_datetime(df["last_pymnt_d"], format="%b-%Y", errors="coerce")
+df["months_of_payments"] = ((last_pay.dt.year - issue.dt.year) * 12
+                            + (last_pay.dt.month - issue.dt.month))
+df["last_fico"] = (df["last_fico_range_low"] + df["last_fico_range_high"]) / 2
+df["debt_settlement"] = (df["debt_settlement_flag"] == "Y").astype(int)
+df["hardship"] = (df["hardship_flag"] == "Y").astype(int)
+
+AFTER_ISSUE = [
+    "total_pymnt", "total_rec_prncp", "total_rec_int", "total_rec_late_fee",
+    "recoveries", "collection_recovery_fee", "last_pymnt_amnt",
+    "months_of_payments", "last_fico", "debt_settlement", "hardship",
+]</code></pre>
+    </div>
+    <div class="callout warn">
+      <div class="callout-label">The One That Looks Innocent</div>
+      <p><code>last_fico_range_low</code> and <code>last_fico_range_high</code> sit right beside the application FICO fields and have almost the same names. They hold the borrower's most recent credit pull, often taken after they had stopped paying.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 6 -->
+  <div class="tut-section" id="models">
+    <div class="section-num">06 · Two Models</div>
+    <h2>The Every-Column Model vs. the Honest One</h2>
+    <p>Both models are the same XGBoost setup used throughout this series, trained on the same random 80/20 split. The only difference is which columns they're allowed to see.</p>
+    <div class="code-block">
+      <div class="code-header"><span>leakage_lendingclub.py · step 4</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">def make_xgb(numeric):
+    pre = ColumnTransformer([
+        ("num", "passthrough", numeric),
+        ("cat", OneHotEncoder(handle_unknown="ignore", min_frequency=20), CATEGORICAL),
+    ])
+    model = XGBClassifier(
+        n_estimators=300, max_depth=3, learning_rate=0.05, subsample=0.8,
+        colsample_bytree=0.8, min_child_weight=5, eval_metric="logloss",
+        random_state=SEED, n_jobs=4,
+    )
+    return Pipeline([("pre", pre), ("model", model)])
+
+
+def score(y, p):
+    return {"AUC": roc_auc_score(y, p),
+            "Accuracy": accuracy_score(y, p &gt;= 0.5),
+            "Recall": recall_score(y, p &gt;= 0.5)}
+
+
+train, test = train_test_split(df, test_size=0.2, stratify=df[TARGET], random_state=SEED)
+print(f"Finished loans: {len(df):,} | charged off: {int(df[TARGET].sum()):,} "
+      f"({df[TARGET].mean():.1%})")
+print(f"Train {len(train):,} | Test {len(test):,}\n")
+
+
+results = {}
+fitted = {}
+for name, numeric in [("Everything in the export", AT_ISSUE + AFTER_ISSUE),
+                      ("Known at issue only", AT_ISSUE)]:
+    m = make_xgb(numeric).fit(train[numeric + CATEGORICAL], train[TARGET])
+    p = m.predict_proba(test[numeric + CATEGORICAL])[:, 1]
+    results[name] = score(test[TARGET], p)
+    fitted[name] = (m, numeric)
+print(pd.DataFrame(results).T.round(3).to_string(), "\n")</code></pre>
+    </div>
+    <div class="output-block"><span class="output-label">Output</span>
+Finished loans: 14,913 | charged off: 3,007 (20.2%)
+Train 11,930 | Test 2,983
+
+                            AUC  Accuracy  Recall
+Everything in the export  1.000     0.996   0.985
+Known at issue only       0.701     0.804   0.082 </div>
+    <div class="tree-img-wrap">
+      <img src="img/leakage_auc.png" alt="Bar chart: XGBoost AUC of 1.000 using every column versus 0.701 using only what was known on the day the loan was issued">
+      <p class="tree-img-caption"><strong>Figure:</strong> Same model, same loans. The every-column model scored a perfect 1.000. Restricted to what was known at issue, it scored 0.701. LendingClub sample, 14,913 finished loans.</p>
+    </div>
+    <table>
+      <thead><tr><th></th><th>Every column</th><th>Known at issue only</th></tr></thead>
+      <tbody>
+        <tr><td>AUC</td><td>1.000</td><td>0.701</td></tr>
+        <tr><td>Accuracy</td><td>99.6%</td><td>80.4%</td></tr>
+        <tr><td>Charge-offs caught (cutoff 0.5)</td><td>98.5%</td><td>8.2%</td></tr>
+      </tbody>
+    </table>
+    <p>The honest AUC of 0.701 is a believable number for credit risk on application data alone. The other two rows deserve a second look. 79.8% of these loans were repaid, so 80.4% accuracy is barely better than approving everyone. And at the default 0.5 cutoff the honest model catches only 8.2% of charge-offs. That's the imbalanced-class problem from <a href="tutorial-imbalanced.html">an earlier tutorial</a>, and it's fixable, but only once you can see the real number.</p>
+    <div class="callout info">
+      <div class="callout-label">Your Numbers May Differ Slightly</div>
+      <p>XGBoost results shift a little between library versions. These came from XGBoost 3.4, scikit-learn 1.9 and pandas 3.0. The pattern, and every conclusion here, is the same.</p>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 7 -->
+  <div class="tut-section" id="find">
+    <div class="section-num">07 · Diagnosis</div>
+    <h2>Finding the Leak</h2>
+    <p>Two quick checks find most leaks. First, score each suspect column on its own. A single field that ranks outcomes well with no model at all is worth a hard look. Second, ask the model which features it relied on.</p>
+    <div class="code-block">
+      <div class="code-header"><span>leakage_lendingclub.py · step 5</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python"># Single-column check: how well does each after-issue field rank loans alone?
+print("AUC of each after-issue field on its own (test set, direction-free):")
+single = {}
+for c in AFTER_ISSUE:
+    x = test[c].fillna(test[c].median())
+    a = roc_auc_score(test[TARGET], x)
+    single[c] = max(a, 1 - a)
+print(pd.Series(single).sort_values(ascending=False).round(3).to_string(), "\n")
+
+# Feature importance (gain) for the everything model, numeric fields only
+m, numeric = fitted["Everything in the export"]
+gain = m.named_steps["model"].get_booster().get_score(importance_type="gain")
+names = list(m.named_steps["pre"].get_feature_names_out())
+imp = pd.Series({names[int(k[1:])].replace("num__", ""): v for k, v in gain.items()})
+imp = (imp / imp.sum()).sort_values(ascending=False)
+print("Top 10 features by share of total gain (everything model):")
+print(imp.head(10).round(3).to_string(), "\n")</code></pre>
+    </div>
+    <div class="output-block"><span class="output-label">Output</span>
+AUC of each after-issue field on its own (test set, direction-free):
+last_fico                  0.944
+total_rec_prncp            0.878
+recoveries                 0.839
+last_pymnt_amnt            0.824
+collection_recovery_fee    0.819
+total_pymnt                0.755
+months_of_payments         0.629
+total_rec_late_fee         0.565
+debt_settlement            0.565
+total_rec_int              0.545
+hardship                   0.500 
+
+Top 10 features by share of total gain (everything model):
+recoveries                 0.410
+collection_recovery_fee    0.251
+last_fico                  0.131
+months_of_payments         0.046
+last_pymnt_amnt            0.035
+loan_amnt                  0.024
+debt_settlement            0.021
+term_months                0.021
+total_rec_prncp            0.013
+installment                0.008 </div>
+    <div class="tree-img-wrap">
+      <img src="img/leakage_importance.png" alt="Horizontal bar chart of the top 10 features by gain; seven of them, including recoveries at 41 percent and the collection recovery fee at 25 percent, were recorded after the loan was issued">
+      <p class="tree-img-caption"><strong>Figure:</strong> Seven of the ten features the every-column model leaned on most were recorded after the loan was issued. Recoveries and the collection recovery fee alone account for two thirds of its gain.</p>
+    </div>
+    <p>Recoveries and the collection recovery fee only exist for a loan that has already been charged off. The model didn't learn to predict default. It learned to read the collection file. The most recent FICO is the one to remember: on its own it scores 0.944, and in a real project its name is easy to mistake for the application FICO.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 8 -->
+  <div class="tut-section" id="quiet">
+    <div class="section-num">08 · A Quieter Leak</div>
+    <h2>Encoding Before the Split</h2>
+    <p>A perfect score is easy to catch. The leaks that do more damage add a few points and look like progress. Here zip code is replaced by its historical default rate, a common way to use a detailed category. The leaky version calculates those rates from every loan, test loans included. The correct version uses training loans only, with out-of-fold rates inside the training set so no loan sees its own outcome in its feature.</p>
+    <div class="code-block">
+      <div class="code-header"><span>leakage_lendingclub.py · step 6</span><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+      <pre><code class="language-python">df["zip3"] = df["zip_code"].astype(str).str[:3]
+prior = train[TARGET].mean()
+
+
+def target_encode(fit_rows, apply_rows, k=20):
+    stats = fit_rows.groupby("zip3")[TARGET].agg(["sum", "count"])
+    enc = (stats["sum"] + k * prior) / (stats["count"] + k)
+    return apply_rows["zip3"].map(enc).fillna(prior).values
+
+
+tr = train.assign(zip3=df.loc[train.index, "zip3"])
+te = test.assign(zip3=df.loc[test.index, "zip3"])
+everyone = pd.concat([tr, te])
+
+# Leaky: encoding built from ALL rows, test outcomes included
+tr_leak = tr.assign(zip_rate=target_encode(everyone, tr))
+te_leak = te.assign(zip_rate=target_encode(everyone, te))
+# Correct: encoding built from training rows only (out-of-fold on train)
+oof = np.zeros(len(tr))
+for a, b in KFold(5, shuffle=True, random_state=SEED).split(tr):
+    oof[b] = target_encode(tr.iloc[a], tr.iloc[b])
+tr_ok = tr.assign(zip_rate=oof)
+te_ok = te.assign(zip_rate=target_encode(tr, te))
+
+zip_results = {}
+for name, a, b in [("Zip rate built from all rows", tr_leak, te_leak),
+                   ("Zip rate built from training rows", tr_ok, te_ok)]:
+    num = AT_ISSUE + ["zip_rate"]
+    mm = make_xgb(num).fit(a[num + CATEGORICAL], a[TARGET])
+    zip_results[name] = score(b[TARGET], mm.predict_proba(b[num + CATEGORICAL])[:, 1])
+print(pd.DataFrame(zip_results).T.round(3).to_string())</code></pre>
+    </div>
+    <div class="output-block"><span class="output-label">Output</span>
+                                     AUC  Accuracy  Recall
+Zip rate built from all rows       0.737     0.810   0.145
+Zip rate built from training rows  0.697     0.804   0.085</div>
+    <div class="tree-img-wrap">
+      <img src="img/leakage_zip.png" alt="Bar chart: AUC of 0.701 with no zip code, 0.737 with a zip default rate built from all rows, and 0.697 with one built from training rows only">
+      <p class="tree-img-caption"><strong>Figure:</strong> Built from all rows, the zip feature appears to add 0.036 to the AUC. Built from training rows only, it adds nothing. The whole gain came from test outcomes baked into the feature.</p>
+    </div>
+    <div class="callout warn">
+      <div class="callout-label">Why This One Is Dangerous</div>
+      <p>0.737 looks like a real improvement, the kind you'd report in a meeting. Nothing about it looks wrong. The only way to catch it is to build every learned transformation from the training rows alone.</p>
+    </div>
+    <p>The same rule covers averages used to fill missing values, scaling, feature selection and resampling. For a tree model, filling missing values from all rows usually moves the score very little. Anything built from the target, like this zip rate, can move it a lot.</p>
+    <p>Time is the other quiet leak. A random split lets the model learn from loans issued after the ones it's tested on. The <a href="tutorial-backtesting.html">backtesting tutorial</a> shows what changes when you split by time instead.</p>
+  </div>
+
+  <hr class="divider">
+
+  <!-- SECTION 9 -->
+  <div class="tut-section" id="takeaway">
+    <div class="section-num">09 · Takeaway</div>
+    <h2>A Checklist for Your Own Model</h2>
+    <ol>
+      <li><strong>Date every column.</strong> Write down when each value becomes known. Anything known after the decision date comes out.</li>
+      <li><strong>Distrust a great score.</strong> If the model beats what people in your field usually see, look for the leak before you celebrate.</li>
+      <li><strong>Check the top features.</strong> If the strongest predictor sounds like a consequence of the outcome (payments, collections, a status change), it probably is.</li>
+      <li><strong>Watch for look-alike names.</strong> A field like the most recent FICO, next to the FICO at application, is easy to include by mistake.</li>
+      <li><strong>Split first.</strong> Fill missing values, scale, select features and build target-based encodings from the training rows only.</li>
+      <li><strong>Split by time when the data has time in it.</strong> Train on the past, test on what came after.</li>
+      <li><strong>Test one feature at a time.</strong> A single column that ranks outcomes almost perfectly on its own is worth a hard look.</li>
+    </ol>
+    <div class="callout key">
+      <div class="callout-label">The Practical Takeaway</div>
+      <p>A leak doesn't make a model fail its tests. It makes the model pass them, and then fail on the first day it meets a decision where the answer isn't in the data yet.</p>
+    </div>
+    <div class="btn-row mt-6">
+      <a class="btn btn-primary" href="code/leakage_lendingclub.py" download>Download the full script (.py) ↓</a>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- BACK TO RESOURCES -->
+  <div class="tut-closing">
+    <p>Browse all tutorials in Resources.</p>
+    <a class="btn btn-outline" href="resources.html#tutorials">Back to Resources →</a>
+  </div>
+
+</div>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <span class="footer-left"><span class="logo-mark">JC<em>M</em></span><span class="footer-copy">© 2026 James C. Mott, Ph.D.</span></span>
+    <div class="footer-links">
+      <a href="index.html">About</a>
+      <a href="academy.html">Academy</a>
+      <a href="consulting.html">Consulting</a>
+      <a href="resources.html">Resources</a>
+      <a href="https://www.linkedin.com/in/JamesCMott" target="_blank" rel="noopener noreferrer">LinkedIn ↗</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  hljs.highlightAll();
+  function copyCode(btn) {
+    const code = btn.closest('.code-block').querySelector('code').innerText;
+    navigator.clipboard.writeText(code).then(() => {
+      btn.textContent = 'Copied!';
+      setTimeout(() => btn.textContent = 'Copy', 2000);
+    });
+  }
+</script>
+</body>
+</html>
